@@ -155,34 +155,20 @@ Of course, this is just a start. "Plugins" are really just functions that modify
 Creating new plugins
 --------------------
 
-Don't see the feature you want? No problem. Creating a plugin is easy! "Plugins" are really just functions that return an iterator function.
+Don't see the feature you want? No problem. Creating a plugin is easy! "Plugins" are really just functions that return reducer function.
 
 For example, let's write a plugin to remove drafts:
 
 ```lua
-local function remove_drafts(iter)
-  return coroutine.wrap(function()
-    for doc in iter do
-      if not doc.draft then
-        coroutine.yield(doc)
-      end
-    end
-  end)
-end
-```
-
-We typically use Lua `coroutines` to create iterators because they're lazy, allowing us to build 1000s of files without consuming too much memory at once.
-
-Lettersmith provides some handy tools for transforming iterators: `lettersmith.transducers` and `lettersmith.lazy`. Let's use these to rewrite the drafts plugin:
-
-```lua
 local filter = require("lettersmith.transducers").filter
-local transformer = require("lettersmith.lazy").transformer
+local transformer = require("lettersmith.reducers").transformer
 
 local remove_drafts = transformer(filter(function (docs)
   return not doc.draft
 end))
 ```
+
+Lettersmith provides some handy tools for transforming files: `lettersmith.transducers` and `lettersmith.reducers`. Let's use these to rewrite the drafts plugin:
 
 
 What's so great about static sites?

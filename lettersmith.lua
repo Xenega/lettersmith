@@ -1,13 +1,13 @@
 local exports = {}
 
 local transducers = require("lettersmith.transducers")
-local reduce = transducers.reduce
+local transduce = transducers.transduce
 local map = transducers.map
 local collect = transducers.collect
 
-local lazy = require("lettersmith.lazy")
-local transform = lazy.transform
-local concat = lazy.concat
+local reducers = require("lettersmith.reducers")
+local transform = reducers.transform
+local concat = reducers.concat
 
 local path = require("lettersmith.path_utils")
 
@@ -23,21 +23,6 @@ local walk_file_paths = file_utils.walk_file_paths
 local shallow_copy = require("lettersmith.table_utils").shallow_copy
 
 local headmatter = require("lettersmith.headmatter")
-
--- Apply a value to a function, returning value.
-local function applyTo(v, f)
-  return f(v)
-end
-
--- Pipe a value through a series of functions, returning end result.
--- Basically like function composition, but applies value right away.
--- Unlike function composition, goes in LTR order, so the value is first
--- transformed by function `a`, then function `b`, etc.
--- Returns transformed value.
-local function pipe(value, a, b, ...)
-  return reduce(applyTo, value, ipairs{a, b, ...})
-end
-exports.pipe = pipe
 
 -- Get a sorted list of all file paths under a given `path_string`.
 -- `compare` is a comparison function for `table.sort`.
@@ -76,8 +61,11 @@ exports.load_doc = load_doc
 -- Docs plugin
 -- Given a Lettersmith paths table (generated from `lettersmith.paths()`),
 -- returns an iterator of docs read from those paths.
-local function docs(lettersmith_paths_table)
-  local base_path_string = lettersmith_paths_table.base_path
+local function docs(base_path_string)
+  -- Get sorted paths table. This also acts as a memoization step, so you can
+  -- consume the Reducible below multiple times without having to walk the
+  -- directory tree multiple times.
+  local paths_table = paths(base_path_string)
 
   -- Walk directory, creating doc objects from files.
   -- Returns a coroutine iterator function good for each doc table.
@@ -91,7 +79,9 @@ local function docs(lettersmith_paths_table)
     return doc
   end
 
-  return transform(map(load_doc_from_path), ipairs(lettersmith_paths_table))
+  return function (step, seed)
+    return transduce(map(load_doc_from_path), step, seed, ipairs(paths_table))
+  end
 end
 exports.docs = docs
 
@@ -99,6 +89,8 @@ exports.docs = docs
 -- of each doc to the `relative_filepath` inside the `out_path_string` directory.
 -- Returns a tally for number of files written.
 local function build(out_path_string, ...)
+  local reducer = concat(...)
+
   -- Remove old build directory recursively.
   if location_exists(out_path_string) then
     assert(remove_recursive(out_path_string))
@@ -111,9 +103,9 @@ local function build(out_path_string, ...)
     return number_of_files + 1
   end
 
-  -- Consume doc reducible. Return a tally representing number
+  -- Consume Reducibles. Return a tally representing number
   -- of files written.
-  return reduce(write_and_tally, 0, concat(...))
+  return reducer(write_and_tally, 0)
 end
 exports.build = build
 

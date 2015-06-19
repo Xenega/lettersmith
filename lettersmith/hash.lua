@@ -6,7 +6,7 @@ This field contains the 32 hexadecimal digits of the md5sum of the document cont
 Fields from document take precedence.
 --]]
 local map = require("lettersmith.transducers").map
-local transformer = require("lettersmith.lazy").transformer
+local transformer = require("lettersmith.reducers").transformer
 local extend = require("lettersmith.table_utils").extend
 local md5sum = require("md5").sumhexa
 

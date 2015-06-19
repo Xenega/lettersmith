@@ -2,7 +2,7 @@ local exports = {}
 
 local wildcards = require("lettersmith.wildcards")
 local filter = require("lettersmith.transducers").filter
-local transformer = require("lettersmith.lazy").transformer
+local transformer = require("lettersmith.reducers").transformer
 
 local table_utils = require("lettersmith.table_utils")
 local merge = table_utils.merge

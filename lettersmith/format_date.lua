@@ -15,7 +15,7 @@ Usage:
 local docs = require("lettersmith.docs_utils")
 local derive_date = docs.derive_date
 local reformat_yyyy_mm_dd = docs.reformat_yyyy_mm_dd
-local transformer = require("lettersmith.lazy").transformer
+local transformer = require("lettersmith.reducers").transformer
 local map = require("lettersmith.transducers").map
 local merge = require("lettersmith.table_utils").merge
 

@@ -37,7 +37,7 @@ Usage:
 local exports = {}
 
 local map = require("lettersmith.transducers").map
-local transformer = require("lettersmith.lazy").transformer
+local transformer = require("lettersmith.reducers").transformer
 
 local table_utils = require("lettersmith.table_utils")
 local merge = table_utils.merge

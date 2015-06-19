@@ -8,10 +8,10 @@ local comp = transducers.comp
 local map = transducers.map
 local reductions = transducers.reductions
 
-local lazy = require("lettersmith.lazy")
-local partition = lazy.partition
-local transform = lazy.transform
-local delay = lazy.delay
+local reducers = require("lettersmith.reducers")
+local partition = reducers.partition
+local transform = reducers.transform
+local delay = reducers.delay
 
 local table_utils = require("lettersmith.table_utils")
 local extend = table_utils.extend
@@ -62,13 +62,13 @@ local function paging(file_path_template, per_page)
     end
   end
 
-  return function(iter, ...)
+  return function(reducer)
     -- Partition iterator and then transform resulting iterator using
     -- our composed `xform`.
     return delay(transform(comp(
       map(expand_list_to_doc),
       reductions(step_number)
-    ), partition(per_page or 10, iter, ...)))
+    ), partition(per_page or 10, reducer)))
   end
 end
 

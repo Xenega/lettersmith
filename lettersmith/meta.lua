@@ -5,7 +5,7 @@ Add metadata to every doc object. This is useful for things like site meta.
 --]]
 local map = require('lettersmith.transducers').map
 local merge = require("lettersmith.table_utils").merge
-local transformer = require("lettersmith.lazy").transformer
+local transformer = require("lettersmith.reducers").transformer
 
 local function use_meta(meta)
   return transformer(map(function (doc)

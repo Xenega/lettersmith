@@ -45,7 +45,7 @@ lettersmith.build("www", gen(paths))
 
 local exports = {}
 local map = require("lettersmith.transducers").map
-local transformer = require("lettersmith.lazy").transformer
+local transformer = require("lettersmith.reducers").transformer
 local serpent = require("serpent")
 local serpent_opts = {comment=false, nocode=true,}
 local function allpass() return true end

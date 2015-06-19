@@ -8,14 +8,7 @@ Usage:
     local use_mustache = require("lettersmith.mustache").use_mustache
     local lettersmith = require("lettersmith")
 
-    lettersmith.generate("raw", "out", use_mustache { path = "templates" })
-
-Lettersmith `mustache` takes 2 arguments: the docs list and a relative path
-to the templates directory.
-
-The function will only template files that have a `template` field in their
-headmatter. If the file name provided in the `template` field is invalid,
-an error will be thrown.
+    lettersmith.docs("docs"):pipe(render_mustache "templates/template.html")
 
 Note that after you've templated your docs, the `contents` field will contain
 all of the HTML, including the template. If you want to keep the raw contents
@@ -28,7 +21,7 @@ local exports = {}
 local lustache = require("lustache")
 
 local map = require("lettersmith.transducers").map
-local transformer = require("lettersmith.lazy").transformer
+local transformer = require("lettersmith.reducers").transformer
 
 local merge = require("lettersmith.table_utils").merge
 
@@ -52,6 +45,9 @@ local function render_mustache(template_path_string)
 end
 exports.render_mustache = render_mustache
 
+-- `choose_mustache` will only template files that have a `template` field in
+-- their headmatter. If the file name provided in the `template` field is
+-- invalid, an error will be thrown.
 local function choose_mustache(template_dir_string)
   return transformer(map(function (doc)
     -- Skip document if it doesn't have a template field.
