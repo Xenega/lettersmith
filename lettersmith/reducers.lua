@@ -22,6 +22,8 @@ local exports = {}
 
 local transducers = require("lettersmith.transducers")
 local reduce = transducers.reduce
+local map = transducers.map
+local filter = transducers.filter
 
 -- Create a reducible function from an iterator.
 local function from_iter(iter, state, at)
@@ -64,6 +66,24 @@ local function transformer(xform)
   end
 end
 exports.transformer = transformer
+
+local function transforming(xform_factory)
+  return function(...)
+    return transformer(xform_factory(...))
+  end
+end
+
+-- Define special case transformers for typical things like mapping each value.
+
+-- `mapping(a2b)` will return a plugin function that will map each item in the
+-- list using `a2b`.
+local mapping = transforming(map)
+exports.mapping = mapping
+
+-- `filtering(predicate)` will return a plugin function that will filter values
+-- in the reducible that don't pass `predicate`.
+local filtering = transforming(filter)
+exports.filtering = filtering
 
 -- Concatenate many reducibles together.
 -- Returns new Reducible.
