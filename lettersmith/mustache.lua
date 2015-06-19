@@ -7,13 +7,16 @@ Usage:
 
     local use_mustache = require("lettersmith.mustache").use_mustache
     local lettersmith = require("lettersmith")
+    local pipe = lettersmith.pipe
+    local docs = lettersmith.docs
 
-    lettersmith.docs("docs"):pipe(render_mustache "templates/template.html")
+    pipe(
+      docs("raw"),
+      render_mustache "templates/template.mustache"
+    )
 
 Note that after you've templated your docs, the `contents` field will contain
-all of the HTML, including the template. If you want to keep the raw contents
-around, you can copy the docs list, or simply copy the contents field to
-another field before templating.
+all of the HTML, including the template.
 --]]
 
 local exports = {}
