@@ -23,8 +23,7 @@ local exports = {}
 
 local lustache = require("lustache")
 
-local map = require("lettersmith.transducers").map
-local transformer = require("lettersmith.reducers").transformer
+local mapping = require("lettersmith.reducers").mapping
 
 local merge = require("lettersmith.table_utils").merge
 
@@ -39,12 +38,12 @@ local function load_and_render_template(template_path_string, context)
 end
 
 local function render_mustache(template_path_string)
-  return transformer(map(function (doc)
+  return mapping(function (doc)
     -- @TODO should also have render function for {{site_url "filename"}}
     -- that will create un-breakable permalink.
     local rendered = load_and_render_template(template_path_string, doc)
     return merge(doc, { contents = rendered })    
-  end))
+  end)
 end
 exports.render_mustache = render_mustache
 
@@ -52,14 +51,14 @@ exports.render_mustache = render_mustache
 -- their headmatter. If the file name provided in the `template` field is
 -- invalid, an error will be thrown.
 local function choose_mustache(template_dir_string)
-  return transformer(map(function (doc)
+  return mapping(function (doc)
     -- Skip document if it doesn't have a template field.
     if not doc.template then return doc end
 
     local template_path_string = path_utils.join(template_dir_string, doc.template)
     local rendered = load_and_render_template(template_path_string, doc)
     return merge(doc, { contents = rendered })    
-  end))
+  end)
 end
 exports.choose_mustache = choose_mustache
 
