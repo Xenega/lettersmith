@@ -109,6 +109,28 @@ local function build(out_path_string, ...)
 end
 exports.build = build
 
+local function call_with(x, f)
+  return f(x)
+end
+
+-- Pipe a single value through many functions. Pipe will call functions from
+-- left-to-right, so the first function in the list gets called first, returning
+-- a new value which gets passed to the second function, etc.
+local function pipe(x, ...)
+  return reduce(call_with, x, ipairs({...}))
+end
+exports.pipe = pipe
+
+-- Chain many functions together. This is like a classic compose function, but
+-- left-to-right, instead of RTL. We think this is easier to read in many cases.
+local function chain(...)
+  local f = {...}
+  return function(x)
+    return pipe(x, table.unpack(f))
+  end
+end
+exports.chain = chain
+
 -- Transparently require submodules in the lettersmith namespace.
 -- Exports of the module lettersmith still have priority.
 -- Convenient for client/build scripts, not intended for modules.

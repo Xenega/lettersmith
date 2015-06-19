@@ -20,30 +20,8 @@
 --     result = reducible(step, seed)
 local exports = {}
 
-local xf = require("lettersmith.transducers")
-local reduce = xf.reduce
-
-local function call_with(x, f)
-  return f(x)
-end
-
--- Pipe a single value through many functions. Pipe will call functions from
--- left-to-right, so the first function in the list gets called first, etc.
-local function pipe(x, ...)
-  return reduce(call_with, x, ipairs({...}))
-end
-exports.pipe = pipe
-
--- Chain many functions together. This RTL function composition.
--- Most functional languages favor LTR function composition, but we think
--- this is easier to read for many use cases.
-local function chain(...)
-  local f = {...}
-  return function(x)
-    return pipe(x, table.unpack(f))
-  end
-end
-exports.chain = chain
+local transducers = require("lettersmith.transducers")
+local reduce = transducers.reduce
 
 -- Create a reducible function from an iterator.
 local function from_iter(iter, state, at)
