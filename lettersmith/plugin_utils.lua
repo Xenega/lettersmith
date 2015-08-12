@@ -26,12 +26,4 @@ local function renderer(a2b)
 end
 exports.renderer = renderer
 
--- Wrap value in a coroutine iterator.
-local function wrap_in_iter(thing)
-  return coroutine.wrap(function ()
-    coroutine.yield(thing)
-  end)
-end
-exports.wrap_in_iter = wrap_in_iter
-
 return exports
