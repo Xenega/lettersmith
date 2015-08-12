@@ -1,6 +1,7 @@
 local exports = {}
 
 local transducers = require("lettersmith.transducers")
+local reduce = transducers.reduce
 local transduce = transducers.transduce
 local map = transducers.map
 local collect = transducers.collect
