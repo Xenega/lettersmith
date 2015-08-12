@@ -24,6 +24,7 @@ local transducers = require("lettersmith.transducers")
 local reduce = transducers.reduce
 local map = transducers.map
 local filter = transducers.filter
+local append = transducers.append
 
 -- Create a reducible function from an iterator.
 local function from_iter(iter, state, at)
@@ -39,6 +40,15 @@ local function from_table(t)
 end
 exports.from_table = from_table
 
+-- Collect a reducer function's values into a table.
+-- Note that reducer functions can yield an infinite series of values,
+-- so be smart!
+-- Returns a table.
+local function collect(reducer)
+  return reducer(append, {})
+end
+exports.collect = collect
+
 local function step_and_yield(_, v)
   coroutine.yield(v)
 end
@@ -48,6 +58,14 @@ local function to_iter(reducible)
   return coroutine.wrap(function () reduce(step_and_yield, reducible) end)
 end
 exports.to_iter = to_iter
+
+-- Wrap single value in a reducer function.
+local function wrap(x)
+  return function(step, seed)
+    return step(x, seed)
+  end
+end
+exports.wrap = wrap
 
 -- Transform a reducible function using a transducer `xform` function.
 -- Returns transformed reducible function.
