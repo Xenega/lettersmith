@@ -7,7 +7,7 @@ local map = transducers.map
 local take = transducers.take
 local comp = transducers.comp
 
-local wrap_in_iter = require("lettersmith.plugin_utils").wrap_in_iter
+local wrap = require("lettersmith.reducers").wrap
 
 local lustache = require("lustache")
 
@@ -83,7 +83,7 @@ local function generate_rss(relative_filepath, site_url, site_title, site_descri
 
   local take_20_rss_items = comp(take(20), map(to_rss_item))
 
-  return function(iter, ...)
+  return function(reducer)
     -- Map table of docs to table of rss items using transducers.
     local items = into(take_20_rss_items, iter, ...)
 
@@ -100,7 +100,7 @@ local function generate_rss(relative_filepath, site_url, site_title, site_descri
       feed_date = os.date("!%a, %d %b %Y %H:%M:%S GMT",os.time())
     end
 
-    return wrap_in_iter({
+    return wrap({
       -- Set date of feed to most recent document date.
       date = feed_date,
       contents = contents,
