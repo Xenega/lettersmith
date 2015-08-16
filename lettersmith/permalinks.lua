@@ -36,8 +36,7 @@ Usage:
 
 local exports = {}
 
-local map = require("lettersmith.transducers").map
-local transformer = require("lettersmith.reducers").transformer
+local mapping = require("lettersmith.plugin_utils").mapping
 
 local table_utils = require("lettersmith.table_utils")
 local merge = table_utils.merge
@@ -113,14 +112,14 @@ end
 exports.make_pretty_url = make_pretty_url
 
 local function render_permalinks(template_string, root_url_string)
-  return transformer(map(function(doc)
+  return mapping(function(doc)
     local path = render_doc_path_from_template(doc, template_string)
     local url = make_pretty_url(root_url_string or "/", path)
     return merge(doc, {
       relative_filepath = path,
       url = url
     })
-  end))
+  end)
 end
 exports.render_permalinks = render_permalinks
 
