@@ -12,13 +12,13 @@ local function escape_pattern(pattern_string)
 end
 exports.escape_pattern = escape_pattern
 
-local function parse(query_string)
+local function parse(wildcard_string)
   -- Parses a path query string into a proper Lua pattern string that can be
   -- used with find and gsub.
 
   -- Replace double-asterisk and single-asterisk query symbols with
   -- temporary tokens.
-  local tokenized = query_string
+  local tokenized = wildcard_string
     :gsub("%*%*", "__DOUBLE_WILDCARD__")
     :gsub("%*", "__WILDCARD__")
     :gsub("%?", "__ANY_CHAR__")
@@ -39,5 +39,10 @@ local function parse(query_string)
   return bounded
 end
 exports.parse = parse
+
+local function is_match(s, wildcard_string)
+  return s:find(wildcard_string) == 1
+end
+exports.is_match = is_match
 
 return exports

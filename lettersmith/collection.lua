@@ -47,28 +47,4 @@ exports.filter = transformer(transducers.filter)
 exports.reject = transformer(transducers.reject)
 exports.take = transformer(transducers.take)
 
--- A lazy alternative to reducing over tables. It implements
--- the minimum functions necessary to reduce and transform.
-local Lazy = {}
-Lazy.__index = Lazy
-
--- Create a new lazy collection with a function that will produce a value
--- given `step` and `seed`
-function Lazy.new(produce)
-  return setmetatable({produce = produce}, Lazy)
-end
-
-reducible(Lazy, function (self, step, seed)
-  -- Produce values
-  return self.produce(step, seed)
-end)
-
-transformable(Lazy, function (self, xform)
-  return Lazy.new(function (step, seed)
-    return transduce(xform, self, step, seed)
-  end)
-end)
-
-exports.Lazy = Lazy
-
 return exports
