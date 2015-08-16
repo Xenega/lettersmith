@@ -41,7 +41,7 @@ end
 exports.parse = parse
 
 local function is_match(s, wildcard_string)
-  return s:find(wildcard_string) == 1
+  return s:find(parse(wildcard_string)) == 1
 end
 exports.is_match = is_match
 
