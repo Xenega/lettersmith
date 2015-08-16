@@ -1,14 +1,7 @@
 local exports = {}
 
-local transducers = require("lettersmith.transducers")
-local reduce = transducers.reduce
-local transduce = transducers.transduce
-local map = transducers.map
-local collect = transducers.collect
-
-local reducers = require("lettersmith.reducers")
-local transform = reducers.transform
-local concat = reducers.concat
+local collection = require("lettersmith.collection")
+local reduce = collection.reduce
 
 local path = require("lettersmith.path_utils")
 
@@ -34,7 +27,6 @@ local function paths(base_path_string)
   local file_paths_table = collect(walk_file_paths(base_path_string))
   -- Sort our new table in-place, comparing by date.
   table.sort(file_paths_table, compare_by_file_path_date)
-  file_paths_table.base_path = base_path_string
   return file_paths_table
 end
 exports.paths = paths
@@ -59,10 +51,28 @@ local function load_doc(file_path_string)
 end
 exports.load_doc = load_doc
 
--- Docs plugin
--- Given a Lettersmith paths table (generated from `lettersmith.paths()`),
--- returns an iterator of docs read from those paths.
+-- Given a base path, returns a table of paths under that path.
 local function docs(base_path_string)
+  local paths_table = paths(base_path_string)
+
+  -- Walk directory, creating doc objects from files.
+  -- Returns a coroutine iterator function good for each doc table.
+  local function load_doc_from_path(file_path_string)
+    local doc = load_doc(file_path_string)
+
+    -- Remove the base path to get the relative file path.
+    local relative_path_string = file_path_string:sub(#base_path_string + 1)
+    doc.relative_filepath = relative_path_string
+
+    return doc
+  end
+
+  return map(paths_table, load_doc_from_path)
+end
+exports.docs = docs
+
+-- Given a base path, returns a `Lazy` collection of paths under that path.
+local function lazy_docs(base_path_string)
   -- Get sorted paths table. This also acts as a memoization step, so you can
   -- consume the Reducible below multiple times without having to walk the
   -- directory tree multiple times.
@@ -80,22 +90,26 @@ local function docs(base_path_string)
     return doc
   end
 
-  return function (step, seed)
-    return transduce(map(load_doc_from_path), step, seed, ipairs(paths_table))
-  end
-end
-exports.docs = docs
+  local lazy_paths = Lazy.new(function (step, seed)
+    return reduce(paths_table, step, seed)
+  end)
 
--- Given an `out_path_string` and a list of `doc` iterators, write `contents`
+  return map(lazy_paths, load_doc_from_path)
+end
+exports.lazy_docs = lazy_docs
+
+-- @TODO route
+
+-- Given an `out_path_string` and a list of reducible tables, write `contents`
 -- of each doc to the `relative_filepath` inside the `out_path_string` directory.
 -- Returns a tally for number of files written.
 local function build(out_path_string, ...)
-  local reducer = concat(...)
-
   -- Remove old build directory recursively.
   if location_exists(out_path_string) then
     assert(remove_recursive(out_path_string))
   end
+
+  local doc_collections = {...}
 
   local function write_and_tally(number_of_files, doc)
     -- Create new file path from relative path and out path.
@@ -106,7 +120,9 @@ local function build(out_path_string, ...)
 
   -- Consume Reducibles. Return a tally representing number
   -- of files written.
-  return reducer(write_and_tally, 0)
+  return reduce(doc_collections, function (tally, docs)
+    return reduce(docs, write_and_tally, tally)
+  end, 0)
 end
 exports.build = build
 
