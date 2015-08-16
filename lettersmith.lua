@@ -3,6 +3,9 @@ local exports = {}
 local collection = require("lettersmith.collection")
 local reduce = collection.reduce
 local map = collection.map
+local filter = collection.filter
+
+local collect = require("lettersmith.transducers").collect
 
 local path = require("lettersmith.path_utils")
 local wildcards = require("lettersmith.wildcards")
