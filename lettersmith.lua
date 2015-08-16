@@ -55,7 +55,7 @@ end
 -- left-to-right, so the first function in the list gets called first, returning
 -- a new value which gets passed to the second function, etc.
 local function pipe(x, ...)
-  return reduce(call_with, x, ipairs({...}))
+  return reduce({...}, call_with, x)
 end
 exports.pipe = pipe
 
