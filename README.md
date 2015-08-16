@@ -8,7 +8,6 @@ Lettersmith's goals are:
 - Simple
 - Flexible: everything is a plugin.
 - Fast: build thousands of pages in seconds or less.
-- Embeddable: we're going to put this thing in an Mac app so normal people can use it.
 
 Lettersmith is open-source and a work-in-progress. [You can help](https://github.com/gordonbrander/lettersmith/issues).
 
@@ -16,9 +15,7 @@ Lettersmith is open-source and a work-in-progress. [You can help](https://github
 What does it do?
 ----------------
 
-Lettersmith is based on a simple idea: load files as Lua tables. So this:
-
-`2015-03-01-example.md`:
+Lettersmith is based on a simple idea: load files as Lua tables. Let's say we have a markdown file called `2015-03-01-example.md`:
 
 ```markdown
 ---
@@ -27,7 +24,7 @@ title: Trying out Lettersmith
 Let's add some content to this file.
 ```
 
-...Becomes this:
+Lettersmith turns it into this:
 
 ```lua
 {
@@ -39,48 +36,38 @@ Let's add some content to this file.
 ```
 
 - The file contents will end up in the `contents` field.
-- You can add an optional [YAML](yaml.org) headmatter block to files. Any YAML properties you put in the block will show up on the table!
+- You can add an optional [YAML](yaml.org) headmatter block to files. Any YAML properties you put in the block will show up on the table.
 - Date will be inferred from file name, but you can provide your own by adding a `date` field to the headmatter.
 
-The function `lettersmith.paths(directory)` returns a table of file paths in that `directory`, sorted by file name. You can then transform those paths using plugins.
-
-The most basic plugin is `lettersmith.docs(paths_table)`. It takes a Lettersmith
-paths table and returns an iterator of tables.
+The function `lettersmith.docs(directory)` returns a list of of document tables:
 
 ```lua
-local paths = lettersmith.paths("raw")
-local docs = lettersmith.docs(paths)
-
-for doc in docs do
-  print(doc)
-end
-
---[[
 {
-  relative_filepath = "foo/x.md",
-  contents = "...",
-  date = "2014-10-17"
+  {
+    relative_filepath = "2015-03-01-example.md",
+    title = "Trying out Lettersmith",
+    contents = "Let's add some content to this file.",
+    date = "2015-03-01"
+  }
+  ...
 }
-...
-]]--
 ```
-
 
 Creating a site
 ---------------
 
 Creating a site is simple. Just create a new lua file. Call it anything you like.
 
-```lua
-local lettersmith = require("lettersmith")
-local render_markdown = require("lettersmith.markdown")
+Transformation of docs is done with plugins. Plugins are just functions that transform the list of document tables.
 
--- Get paths from "raw" folder
-local paths = lettersmith.paths("raw")
+```lua
+-- Import lettersmith and a Markdown plugin
+local lettersmith = require("lettersmith")
+local markdown = require("lettersmith.markdown")
 
 -- Render markdown
 local docs = lettersmith.docs(paths)
-docs = render_markdown(docs)
+docs = markdown(docs)
 
 -- Build files, writing them to "www" folder
 lettersmith.build("www", docs)
@@ -88,31 +75,25 @@ lettersmith.build("www", docs)
 
 That's it! No fancy classes or complex conventions. Just a convenient library for transforming files with functions.
 
-What if you want to combine a series of plugins? No problem. Lettersmith plugins are composable:
+What if you want to combine a series of plugins? Lettersmith has a function
+called `route` that can be used to grab a collection of files and transform it
+through a pipeline of plugin functions:
 
 ```lua
 -- ...
-local comp = require("lettersmith.transducers").comp
-
-local blog_post = comp(
-  render_permalinks ":yyyy/:mm/:slug",
-  use_meta { site_title = "..." },
-  render_markdown,
-  lettersmith.docs
+local posts = lettersmith.route(
+  'posts/*.md',
+  markdown,
+  mustache "templates/post.html"
 )
 
-local blog_single = comp(
-  render_mustache "templates/blog_single.html",
-  blog_post
+local pages = lettersmith.route(
+  'pages/*.md',
+  markdown,
+  mustache "templates/page.html"
 )
 
-local blog_archive = comp(
-  render_mustache "templates/blog_archive.html",
-  paging "page/:n/index.html",
-  blog_post
-)
-
-build("www", blog_single(paths), blog_archive(paths))
+lettersmith.build('www', posts, pages)
 ```
 
 
@@ -149,7 +130,7 @@ lettersmith.build(docs, "out")
 ```
 -->
 
-Of course, this is just a start. "Plugins" are really just functions that modify a list of tables. This makes Lettersmith simple. It also means it is extremely flexible. Lettersmith can be anything you want: a website builder, a blog, a documentation generation script... If you need to transform text files, Lettersmith is an easy way to do it.
+Of course, this is just a start. "Plugins" are really just functions that modify the list of tables. This makes Lettersmith simple. It also means it is extremely flexible. Lettersmith can be anything you want: a website builder, a blog, a documentation generation script... If you need to transform text files, Lettersmith is an easy way to do it.
 
 
 Creating new plugins
@@ -157,18 +138,31 @@ Creating new plugins
 
 Don't see the feature you want? No problem. Creating a plugin is easy! "Plugins" are really just functions that return reducer function.
 
-For example, let's write a plugin to remove drafts:
+For example, here's a simple plugin to remove drafts:
 
 ```lua
-local filter = require("lettersmith.transducers").filter
-local transformer = require("lettersmith.reducers").transformer
-
-local remove_drafts = transformer(filter(function (docs)
-  return not doc.draft
-end))
+function remove_drafts(docs)
+  local out = {}
+  for i, doc in ipairs(docs) do
+    if not doc.draft then
+      table.insert(out, doc)
+    end
+  end
+  return out
+end
 ```
 
-Lettersmith provides some handy tools for transforming files: `lettersmith.transducers` and `lettersmith.reducers`. Let's use these to rewrite the drafts plugin:
+This can be simplified, though. Lettersmith comes with handy tools for creating plugins. Here's the same plugin, using Lettersmith's `filtering` decorator:
+
+```lua
+local filtering = require('plugin_utils').filtering
+
+remove_drafts = filtering(function (doc)
+  return not doc.draft
+end)
+```
+
+That's much cleaner.
 
 
 What's so great about static sites?
