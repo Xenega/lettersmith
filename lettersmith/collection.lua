@@ -2,6 +2,7 @@ local exports = {}
 
 local transducers = require("lettersmith.transducers")
 local reduce_iter = transducers.reduce
+local into = transducers.into
 
 local Poly = require("lettersmith.poly")
 local poly = Poly.poly
@@ -23,7 +24,7 @@ exports.transduce = transduce
 -- Define a generic `into` function that knows how to take a table and transform
 -- it using transducers, returning a new table.
 local transform = poly(function(self, xform)
-  return transduce(xform, self, append, {})
+  return into(xform, ipairs(self))
 end)
 exports.transform = transform
 exports.transformable = setter(transform)
