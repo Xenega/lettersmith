@@ -92,19 +92,6 @@ local function into(xform, iter, ...)
 end
 exports.into = into
 
-local function step_and_yield(_, v)
-  coroutine.yield(v)
-end
-
--- Like `into`, but instead of collecting results in a table, creates a lazy
--- coroutine iterator.
-local function iter(xform, iter, state, at)
-  return coroutine.wrap(function ()
-    return transduce(xform, step_and_yield, nil, iter, state, at)
-  end)
-end
-exports.iter = iter
-
 -- Collect all values of an iterator into a list table using `reduce`.
 -- Returns a list table.
 local function collect(iter, ...)
