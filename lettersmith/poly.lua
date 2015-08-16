@@ -25,3 +25,5 @@ local function setter(k)
   end
 end
 exports.setter = setter
+
+return exports
