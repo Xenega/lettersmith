@@ -51,7 +51,8 @@ build = {
 
     -- Libraries
     ["lettersmith.transducers"] = "lettersmith/transducers.lua",
-    ["lettersmith.reducers"] = "lettersmith/reducers.lua",
+    ["lettersmith.poly"] = "lettersmith/poly.lua",
+    ["lettersmith.lazy"] = "lettersmith/lazy.lua",
     ["lettersmith.docs_utils"] = "lettersmith/docs_utils.lua",
     ["lettersmith.headmatter"] = "lettersmith/headmatter.lua",
     ["lettersmith.path_utils"] = "lettersmith/path_utils.lua",
