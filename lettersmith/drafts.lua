@@ -4,8 +4,7 @@ Lettersmith Drafts
 Remove drafts from rendered docs. A draft is any file who's name starts with
 an underscore.
 --]]
-local reject = require("lettersmith.transducers").reject
-local transformer = require("lettersmith.reducers").transformer
+local expanding = require("lettersmith.plugin_utils").filtering
 local path_utils = require("lettersmith.path_utils")
 
 local function is_doc_path_prefixed_with_underscore(doc)
@@ -14,6 +13,12 @@ local function is_doc_path_prefixed_with_underscore(doc)
 end
 
 -- Remove all docs who's path is prefixed with an underscore.
-local remove_drafts = transformer(reject(is_doc_path_prefixed_with_underscore))
+local remove_drafts = filtering(function (doc)
+  if is_doc_path_prefixed_with_underscore(doc) then
+    return false
+  else
+    return true
+  end
+end)
 
 return remove_drafts

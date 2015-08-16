@@ -43,4 +43,23 @@ local function slice_table(t, from, to)
 end
 exports.slice_table = slice_table
 
+-- Partition an iterator into "chunks", returning an iterator of tables
+-- containing `n` items each.
+-- Returns a `Reducible` table.
+local function partition(n, list_table)
+  local function step_chunk(chunk, input)
+    if #chunk < n then
+      return append(chunk, input)
+    else
+      -- If chunk is full, step value
+      value = step(chunk, value)
+      return {input}
+    end
+  end
+  -- Capture the last chunk, and reduce it with `step`.
+  local last_chunk = reduce(step_chunk, value, ipairs(list_table))
+  return step(last_chunk, value)
+end
+exports.partition = partition
+
 return exports

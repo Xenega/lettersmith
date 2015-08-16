@@ -23,7 +23,7 @@ local exports = {}
 
 local lustache = require("lustache")
 
-local mapping = require("lettersmith.reducers").mapping
+local mapping = require("lettersmith.plugin_utils").mapping
 
 local merge = require("lettersmith.table_utils").merge
 
