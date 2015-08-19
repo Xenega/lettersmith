@@ -39,20 +39,6 @@ end)
 -- Implement reduce for functions (iterators)
 impl(reduce, 'function', reduce_iter)
 
--- Convert a coroutine to an iterator function
-function iter_coroutine(thread)
-  return function ()
-    local code, result = coroutine.resume(thread)
-    return result
-  end
-end
-exports.iter_coroutine = iter_coroutine
-
--- Implement reduce for coroutines.
-impl(reduce, 'thread', function (step, seed, thread)
-  return reduce_iter(step, seed, iter_coroutine(thread))
-end)
-
 -- Define a polymorphic `transform` function that knows how to take a
 -- transducers `xform` function and transform itself.
 local transform = multi(function (xform, x)
@@ -60,7 +46,7 @@ local transform = multi(function (xform, x)
 end)
 exports.transform = transform
 
--- Implement transform for tables
+-- Implement transform for tables. Returns a transformed table.
 impl(transform, 'table', function (xform, table)
   return into(xform, ipairs(table))
 end)
@@ -70,17 +56,18 @@ local function step_yield_ipairs(i, v)
   return i + 1
 end
 
--- Implement transform for coroutines
-impl(transform, 'thread', function (xform, thread)
-  return coroutine.create(function ()
-    return reduce(xform(step_yield_ipairs), 1, thread)
+-- Implement transform for iterators. Returns a coroutine iterator of
+-- transformed values.
+impl(transform, 'function', function (xform, iter, ...)
+  return coroutine.wrap(function ()
+    return reduce_iter(xform(step_yield_ipairs), 1, iter, ...)
   end)
 end)
 
--- Create a coroutine from a table
+-- Create a coroutine iterator from a table
 local function table_to_co(t)
-  return coroutine.create(function ()
-    return reduce(step_yield_ipairs, 1, ipairs(t))
+  return coroutine.wrap(function ()
+    return reduce_iter(step_yield_ipairs, 1, ipairs(t))
   end)
 end
 exports.table_to_co = table_to_co
