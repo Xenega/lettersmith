@@ -14,7 +14,7 @@ local function dispatch(self, ...)
 end
 
 -- Create a new multimethod. A multimethod is a callable object.
--- Gen key is passed the calling arguments and produces a key. That key is then
+-- `gen_key` is passed the calling arguments and produces a key. That key is
 -- used to pick a method. See `dispatch` for implementation.
 -- Returns a callable object.
 local function multi(gen_key)
