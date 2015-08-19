@@ -4,6 +4,7 @@ local collection = require("lettersmith.collection")
 local reduce = collection.reduce
 local map = collection.map
 local filter = collection.filter
+local cat = collection.cat
 local table_to_co = collection.table_to_co
 
 local collect = require("lettersmith.transducers").collect
@@ -122,8 +123,6 @@ local function build(out_path_string, ...)
     assert(remove_recursive(out_path_string))
   end
 
-  local doc_collections = {...}
-
   local function write_and_tally(number_of_files, doc)
     -- Create new file path from relative path and out path.
     local file_path = path.join(out_path_string, doc.relative_filepath)
@@ -133,9 +132,7 @@ local function build(out_path_string, ...)
 
   -- Consume Reducibles. Return a tally representing number
   -- of files written.
-  return reduce(function (tally, docs)
-    return reduce(write_and_tally, tally, docs)
-  end, 0, doc_collections)
+  return reduce(write_and_tally, 0, cat({...}))
 end
 exports.build = build
 
