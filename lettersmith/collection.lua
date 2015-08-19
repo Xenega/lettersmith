@@ -58,9 +58,9 @@ end
 
 -- Implement transform for iterators. Returns a coroutine iterator of
 -- transformed values.
-impl(transform, 'function', function (xform, iter, ...)
+impl(transform, 'function', function (xform, iter, state, at)
   return coroutine.wrap(function ()
-    return reduce_iter(xform(step_yield_ipairs), 1, iter, ...)
+    return reduce_iter(xform(step_yield_ipairs), 1, iter, state, at)
   end)
 end)
 
@@ -91,5 +91,17 @@ exports.filter = transformer(transducers.filter)
 exports.reject = transformer(transducers.reject)
 exports.take = transformer(transducers.take)
 exports.take_while = transformer(transducers.take_while)
+
+local function catting(step)
+  return function(result, input)
+    return reduce(step, result, input)
+  end
+end
+
+-- Create a generic cat function
+local function cat(...)
+  return transform(catting, ...)
+end
+exports.cat = cat
 
 return exports
