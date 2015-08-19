@@ -4,6 +4,7 @@ local collection = require("lettersmith.collection")
 local reduce = collection.reduce
 local map = collection.map
 local filter = collection.filter
+local table_to_co = collection.table_to_co
 
 local collect = require("lettersmith.transducers").collect
 
@@ -42,9 +43,9 @@ local function query(wildcard_string)
   local base_path_string = path.shift(wildcard_string)
   -- Walk files paths, then filter out all paths that don't match wildcard
   -- pattern.
-  return filter(paths(base_path_string), function(path)
+  return filter(function(path)
     return wildcards.is_match(path, wildcard_string)
-  end)
+  end, paths(base_path_string))
 end
 
 local function call_with(x, f)
@@ -55,7 +56,7 @@ end
 -- left-to-right, so the first function in the list gets called first, returning
 -- a new value which gets passed to the second function, etc.
 local function pipe(x, ...)
-  return reduce({...}, call_with, x)
+  return reduce(call_with, x, {...})
 end
 exports.pipe = pipe
 
@@ -92,16 +93,25 @@ exports.load_doc = load_doc
 
 -- Given a base path, returns a table of documents under that path.
 local function docs(base_path_string)
-  return map(paths(base_path_string), load_doc)
+  return map(load_doc, paths(base_path_string))
 end
 exports.docs = docs
 
 -- Route all docs matching `wildcard_string` through a list of plugins.
 -- Returns a list table of docs.
 local function route(wildcard_string, ...)
-  return pipe(map(query(wildcard_string), load_doc), ...)
+  return pipe(map(load_doc, query(wildcard_string)), ...)
 end
 exports.route = route
+
+-- Route all docs matching `wildcard_string` through a list of plugins.
+-- Returns a lazy coroutine of docs.
+-- This is less convenient than a table for manipulation, but is useful for
+-- very large websites that can't load all docs at once.
+local function route_lazy(wildcard_string, ...)
+  return pipe(map(load_doc, table_to_co(query(wildcard_string))), ...)
+end
+exports.route_lazy = route_lazy
 
 -- Given an `out_path_string` and a list of reducible tables, write `contents`
 -- of each doc to the `relative_filepath` inside the `out_path_string` directory.
@@ -123,9 +133,9 @@ local function build(out_path_string, ...)
 
   -- Consume Reducibles. Return a tally representing number
   -- of files written.
-  return reduce(doc_collections, function (tally, docs)
-    return reduce(docs, write_and_tally, tally)
-  end, 0)
+  return reduce(function (tally, docs)
+    return reduce(write_and_tally, tally, docs)
+  end, 0, doc_collections)
 end
 exports.build = build
 

@@ -10,7 +10,7 @@ local merge = table_utils.merge
 -- Lift a function into a function that maps over a list table.
 local function mapping(a2b)
   return function(docs)
-    return map(docs, a2b)
+    return map(a2b, docs)
   end
 end
 exports.mapping = mapping
@@ -24,9 +24,9 @@ local function rendering(f)
 end
 exports.rendering = rendering
 
-local function filtering(f)
+local function filtering(predicate)
   return function(docs)
-    return filter(docs, f)
+    return filter(predicate, docs)
   end
 end
 exports.filtering = filtering
