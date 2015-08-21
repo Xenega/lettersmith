@@ -65,7 +65,7 @@ exports.derive_slug = derive_slug
 -- Given a `yyyy-mm-dd` date string, return `yyyy`, `mm` and `dd` as separate
 -- return values. Returns values or nil if there is no match.
 local function destructure_yyyy_mm_dd(date_string)
-  return date_string:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)")
+  return date_string:match("(%d%d%d%d)%-(%d%d)%-(%d%d)")
 end
 
 local function yyyy_mm_dd_to_time(date_string)
@@ -85,7 +85,7 @@ exports.reformat_yyyy_mm_dd = reformat_yyyy_mm_dd
 -- Match a `YYYY-MM-DD` date at the beginning of a string.
 -- Returns matched string or `nil`.
 local function match_yyyy_mm_dd(s)
-  return s:match("^%d%d%d%d%-%d%d%-%d%d")
+  return s:match("%d%d%d%d%-%d%d%-%d%d")
 end
 exports.match_yyyy_mm_dd = match_yyyy_mm_dd
 
