@@ -138,27 +138,26 @@ local function write_entire_file_deep(filepath, contents)
 end
 exports.write_entire_file_deep = write_entire_file_deep
 
--- Recursively walk through directory at `path_string` calling
--- `callback` with each file path found.
-local function walk_file_paths_cps(callback, path_string)
+-- Recursively walk through directory at `path_string`, appending
+-- items found to table `t`.
+local function walk_file_paths_into(t, path_string)
   for f in children(path_string) do
     local filepath = path_utils.join(path_string, f)
 
     if is_file(filepath) then
-      callback(filepath)
+      table.insert(t, filepath)
     elseif is_dir(filepath) then
-      walk_file_paths_cps(callback, filepath)
+      walk_file_paths_into(t, filepath)
     end
   end
+  return t
 end
 
 -- Given `path_string` -- a path to a directory -- recursively walks through
 -- directory for all file paths.
--- Returns a coroutine iterator.
+-- Returns a list table of paths.
 local function walk_file_paths(path_string)
-  return coroutine.wrap(function()
-    walk_file_paths_cps(coroutine.yield, path_string)
-  end)
+  return walk_file_paths_into({}, path_string)
 end
 exports.walk_file_paths = walk_file_paths
 

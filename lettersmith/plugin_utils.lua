@@ -1,8 +1,8 @@
 local exports = {}
 
-local collection = require("lettersmith.collection")
-local map = collection.map
-local filter = collection.filter
+local iter = require("lettersmith.iter")
+local map = iter.map
+local filter = iter.filter
 
 local table_utils = require("lettersmith.table_utils")
 local merge = table_utils.merge

@@ -1,13 +1,11 @@
 local exports = {}
 
-local collection = require("lettersmith.collection")
-local reduce = collection.reduce
-local map = collection.map
-local filter = collection.filter
+local iter = require("lettersmith.iter")
+local reduce = iter.reduce
+local map = iter.map
+local filter = iter.filter
 local cat = collection.cat
-local table_to_co = collection.table_to_co
-
-local collect = require("lettersmith.transducers").collect
+local values = collection.values
 
 local path = require("lettersmith.path_utils")
 local wildcards = require("lettersmith.wildcards")
@@ -30,8 +28,8 @@ local headmatter = require("lettersmith.headmatter")
 -- By default, will sort file paths using `compare_by_file_path_date`.
 -- Returns a Lua list table of file paths.
 local function paths(base_path_string)
-  -- Recursively walk through file paths. Collect result in table.
-  local file_paths_table = collect(walk_file_paths(base_path_string))
+  -- Recursively walk through file paths.
+  local file_paths_table = walk_file_paths(base_path_string)
   -- Sort our new table in-place, comparing by date.
   table.sort(file_paths_table, compare_by_file_path_date)
   return file_paths_table
@@ -46,7 +44,7 @@ local function query(wildcard_string)
   -- pattern.
   return filter(function(path)
     return wildcards.is_match(path, wildcard_string)
-  end, paths(base_path_string))
+  end, values(paths(base_path_string)))
 end
 
 local function call_with(x, f)
@@ -94,45 +92,36 @@ exports.load_doc = load_doc
 
 -- Given a base path, returns a table of documents under that path.
 local function docs(base_path_string)
-  return map(load_doc, paths(base_path_string))
+  return map(load_doc, values(paths(base_path_string)))
 end
 exports.docs = docs
 
 -- Route all docs matching `wildcard_string` through a list of plugins.
--- Returns a list table of docs.
+-- Returns an iterator of docs.
 local function route(wildcard_string, ...)
   return pipe(map(load_doc, query(wildcard_string)), ...)
 end
 exports.route = route
 
--- Route all docs matching `wildcard_string` through a list of plugins.
--- Returns a lazy coroutine of docs.
--- This is less convenient than a table for manipulation, but is useful for
--- very large websites that can't load all docs at once.
-local function route_lazy(wildcard_string, ...)
-  return pipe(map(load_doc, table_to_co(query(wildcard_string))), ...)
-end
-exports.route_lazy = route_lazy
-
--- Given an `out_path_string` and a list of reducible tables, write `contents`
+-- Given an `out_path_string` and a bunch of stateful iterators, write `contents`
 -- of each doc to the `relative_filepath` inside the `out_path_string` directory.
--- Returns a tally for number of files written.
 local function build(out_path_string, ...)
   -- Remove old build directory recursively.
   if location_exists(out_path_string) then
     assert(remove_recursive(out_path_string))
   end
 
-  local function write_and_tally(number_of_files, doc)
+  local function write_doc(doc)
     -- Create new file path from relative path and out path.
     local file_path = path.join(out_path_string, doc.relative_filepath)
     assert(write_entire_file_deep(file_path, doc.contents or ""))
-    return number_of_files + 1
   end
 
-  -- Consume Reducibles. Return a tally representing number
-  -- of files written.
-  return reduce(write_and_tally, 0, cat({...}))
+  for iter in values({...}) do
+    for doc in iter do
+      write_doc(doc)
+    end
+  end
 end
 exports.build = build
 
