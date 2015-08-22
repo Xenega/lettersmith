@@ -4,8 +4,7 @@ local iter = require("lettersmith.iter")
 local reduce = iter.reduce
 local map = iter.map
 local filter = iter.filter
-local cat = collection.cat
-local values = collection.values
+local values = iter.values
 
 local path = require("lettersmith.path_utils")
 local wildcards = require("lettersmith.wildcards")
@@ -55,7 +54,7 @@ end
 -- left-to-right, so the first function in the list gets called first, returning
 -- a new value which gets passed to the second function, etc.
 local function pipe(x, ...)
-  return reduce(call_with, x, {...})
+  return reduce(call_with, x, ipairs({...}))
 end
 exports.pipe = pipe
 

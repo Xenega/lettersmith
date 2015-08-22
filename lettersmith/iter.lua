@@ -59,6 +59,16 @@ local function map(a2b, next)
 end
 exports.map = map
 
+local function reductions(step, result, next)
+  return function()
+    for v in next do
+      result = step(result, v)
+      return result
+    end
+  end
+end
+exports.reductions = reductions
+
 local function take(n, next)
   return function()
     n = n - 1
@@ -98,3 +108,5 @@ local function collect(next, ...)
   return reduce(append, {}, next, ...)
 end
 exports.collect = collect
+
+return exports

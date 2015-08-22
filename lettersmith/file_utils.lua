@@ -10,10 +10,9 @@ local attributes = lfs.attributes
 local mkdir = lfs.mkdir
 local rmdir = lfs.rmdir
 
-local transducers = require("lettersmith.transducers")
-local reductions = transducers.reductions
-local transduce = transducers.transduce
-local into = transducers.into
+local iter = require("lettersmith.iter")
+local reductions = iter.reductions
+local values = iter.values
 
 local path_utils = require("lettersmith.path_utils")
 
@@ -69,22 +68,16 @@ local function step_traversal(dir, path)
   if dir == "" then return path else return dir .. "/" .. path end
 end
 
--- Returns every iteration of a path traversal:
---
---     traversals("foo/bar/baz")
---     > {"foo", "foo/bar", "foo/bar/baz"}
+-- Returns every iteration of a path traversal, as an iterator.
 local function traversals(path_string)
-  local parts = path_utils.parts(path_string)
-  return into(reductions(step_traversal, ""), ipairs(parts))
+  return reductions(step_traversal, "", values(path_utils.parts(path_string)))
 end
 
 local function mkdir_deep(path_string)
   -- Create deeply nested directory at `location`.
   -- Returns `true` on success, or `nil, message` on failure.
 
-  local traversal_paths = traversals(path_string)
-
-  for i, path_substring in ipairs(traversal_paths) do
+  for path_substring in traversals(path_string) do
     local is_success, message = mkdir_if_missing(path_substring)
     if not is_success then return is_success, message end
   end

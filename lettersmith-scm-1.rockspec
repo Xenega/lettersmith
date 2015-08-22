@@ -50,9 +50,7 @@ build = {
     ["lettersmith.debug"] = "lettersmith/debug.lua",
 
     -- Libraries
-    ["lettersmith.transducers"] = "lettersmith/transducers.lua",
-    ["lettersmith.collection"] = "lettersmith/collection.lua",
-    ["lettersmith.multi"] = "lettersmith/multi.lua",
+    ["lettersmith.iter"] = "lettersmith/iter.lua",
     ["lettersmith.docs_utils"] = "lettersmith/docs_utils.lua",
     ["lettersmith.headmatter"] = "lettersmith/headmatter.lua",
     ["lettersmith.path_utils"] = "lettersmith/path_utils.lua",
