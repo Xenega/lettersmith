@@ -1,13 +1,11 @@
 -- Given a doc list, will generate an RSS feed file.
 -- Can be used as a plugin, or as a helper for a theme plugin.
 
-local transducers = require("lettersmith.transducers")
-local into = transducers.into
-local map = transducers.map
-local take = transducers.take
-local comp = transducers.comp
-
-local wrap = require("lettersmith.reducers").wrap
+local iter = require("lettersmith.iter")
+local take = iter.take
+local map = iter.map
+local collect = iter.collect
+local values = iter.values
 
 local lustache = require("lustache")
 
@@ -81,11 +79,8 @@ local function generate_rss(relative_filepath, site_url, site_title, site_descri
     return to_rss_item_from_doc(doc, site_url)
   end
 
-  local take_20_rss_items = comp(take(20), map(to_rss_item))
-
-  return function(reducer)
-    -- Map table of docs to table of rss items using transducers.
-    local items = into(take_20_rss_items, iter, ...)
+  return function(next)
+    local items = collect(take(20, map(to_rss_item, next)))
 
     local contents = render_feed({
       site_url = site_url,
@@ -93,6 +88,7 @@ local function generate_rss(relative_filepath, site_url, site_title, site_descri
       site_description = site_description,
       items = items
     })
+
     local feed_date
     if #items > 0 then
       feed_date = items[1].date
@@ -100,12 +96,14 @@ local function generate_rss(relative_filepath, site_url, site_title, site_descri
       feed_date = os.date("!%a, %d %b %Y %H:%M:%S GMT",os.time())
     end
 
-    return wrap({
+    local rss_doc = {
       -- Set date of feed to most recent document date.
       date = feed_date,
       contents = contents,
       relative_filepath = relative_filepath
-    })
+    }
+
+    return values({rss_doc})
   end
 end
 exports.generate_rss = generate_rss
