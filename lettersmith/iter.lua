@@ -24,6 +24,7 @@ local function stateful(next, state, at)
     return v
   end
 end
+exports.stateful = stateful
 
 -- Filter a stateful `next` iterator function, returning a new `next` function
 -- for the items that pass `predicate` function.
