@@ -17,6 +17,8 @@ local function values(t)
 end
 exports.values = values
 
+-- Capture the state of a stateless iterator and return a stateful iterator
+-- for the same values.
 local function stateful(next, state, at)
   local v
   return function()
@@ -92,6 +94,7 @@ local function value(x, y)
   if x and y then return y else return x end
 end
 
+-- Reduce over an iterator and produce a result.
 local function reduce(step, result, next, ...)
   for i, v in next, ... do
     result = step(result, value(i, v))
@@ -105,9 +108,34 @@ local function append(t, v)
   return t
 end
 
+-- Collect an iterator's values into a table.
 local function collect(next, ...)
   return reduce(append, {}, next, ...)
 end
 exports.collect = collect
+
+-- Partition an iterator into "chunks", returning an iterator of tables
+-- containing `chunk_size` items each.
+-- Returns a new iterator of chunks
+local function partition(chunk_size, next)
+  return function()
+    local chunk = {}
+
+    for v in next do
+      table.insert(chunk, v)
+      if #chunk == chunk_size then
+        return chunk
+      end
+    end
+
+    -- If we have any values in the last chunk, return it.
+    if #chunk > 0 then
+      return chunk
+    end
+
+    -- Otherwise, return nothing
+  end
+end
+exports.partition = partition
 
 return exports
