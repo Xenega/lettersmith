@@ -24,6 +24,7 @@ description = {
 }
 dependencies = {
   "lua >= 5.1",
+  "iter >= 0.0",
   "luafilesystem >= 1.6",
   "lustache >= 1.3",
   "yaml >= 1.1",
@@ -50,7 +51,6 @@ build = {
     ["lettersmith.debug"] = "lettersmith/debug.lua",
 
     -- Libraries
-    ["lettersmith.iter"] = "lettersmith/iter.lua",
     ["lettersmith.docs_utils"] = "lettersmith/docs_utils.lua",
     ["lettersmith.headmatter"] = "lettersmith/headmatter.lua",
     ["lettersmith.path_utils"] = "lettersmith/path_utils.lua",

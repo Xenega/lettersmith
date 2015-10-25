@@ -10,7 +10,7 @@ local attributes = lfs.attributes
 local mkdir = lfs.mkdir
 local rmdir = lfs.rmdir
 
-local iter = require("lettersmith.iter")
+local iter = require("iter")
 local reductions = iter.reductions
 local values = iter.values
 

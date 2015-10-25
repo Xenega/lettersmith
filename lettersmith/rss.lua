@@ -1,7 +1,7 @@
 -- Given a doc list, will generate an RSS feed file.
 -- Can be used as a plugin, or as a helper for a theme plugin.
 
-local iter = require("lettersmith.iter")
+local iter = require("iter")
 local take = iter.take
 local map = iter.map
 local collect = iter.collect

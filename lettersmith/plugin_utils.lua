@@ -1,6 +1,6 @@
 local exports = {}
 
-local iter = require("lettersmith.iter")
+local iter = require("iter")
 local map = iter.map
 local filter = iter.filter
 
