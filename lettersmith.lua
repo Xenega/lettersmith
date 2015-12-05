@@ -102,6 +102,14 @@ local function route(wildcard_string, ...)
 end
 exports.route = route
 
+-- Write out the contents of a single doc object to a file.
+local function write_doc(out_path_string, doc)
+  -- Create new file path from relative path and out path.
+  local file_path = path.join(out_path_string, doc.relative_filepath)
+  assert(write_entire_file_deep(file_path, doc.contents or ""))
+end
+exports.write_doc = write_doc
+
 -- Given an `out_path_string` and a bunch of stateful iterators, write `contents`
 -- of each doc to the `relative_filepath` inside the `out_path_string` directory.
 local function build(out_path_string, ...)
@@ -110,15 +118,9 @@ local function build(out_path_string, ...)
     assert(remove_recursive(out_path_string))
   end
 
-  local function write_doc(doc)
-    -- Create new file path from relative path and out path.
-    local file_path = path.join(out_path_string, doc.relative_filepath)
-    assert(write_entire_file_deep(file_path, doc.contents or ""))
-  end
-
   for iter in values({...}) do
     for doc in iter do
-      write_doc(doc)
+      write_doc(out_path_string, doc)
     end
   end
 end
