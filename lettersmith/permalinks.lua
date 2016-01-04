@@ -34,8 +34,6 @@ Usage:
     })
 --]]
 
-local exports = {}
-
 local mapping = require("lettersmith.plugin_utils").mapping
 
 local table_utils = require("lettersmith.table_utils")
