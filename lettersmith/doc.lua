@@ -6,6 +6,12 @@ local exports = {}
 
 local path_utils = require("lettersmith.path_utils")
 
+-- Read path from doc table
+local function path(doc)
+  return doc.path
+end
+exports.path = path
+
 -- Returns the title of the doc from headmatter, or the first sentence of
 -- the contents.
 local function derive_title(doc)
@@ -43,7 +49,7 @@ end
 -- `derive_slug` will do its best to create something nice.
 -- Returns a slug made from title, filename or contents.
 local function derive_slug(doc)
-  local file_name_slug = find_slug_in_file_path(doc.relative_filepath)
+  local file_name_slug = find_slug_in_file_path(path(doc))
 
   -- Prefer title if present.
   if doc.title then
@@ -108,7 +114,7 @@ local epoch_yyyy_mm_dd = os.date("%F", 0)
 -- Returns a `YYYY-MM-DD` date string.
 local function derive_date(doc)
   local headmatter_date_string = doc.date and match_yyyy_mm_dd(doc.date)
-  local file_path_date_string = match_yyyy_mm_dd_in_file_path(doc.relative_filepath)
+  local file_path_date_string = match_yyyy_mm_dd_in_file_path(path(doc))
 
   if headmatter_date_string then
     return headmatter_date_string

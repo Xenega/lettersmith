@@ -10,7 +10,7 @@ local collect = iter.collect
 local path = require("lettersmith.path_utils")
 local wildcards = require("lettersmith.wildcards")
 
-local compare_by_file_path_date = require("lettersmith.doc").compare_by_file_path_date
+local Doc = require("lettersmith.doc")
 
 local file_utils = require("lettersmith.file_utils")
 local location_exists = file_utils.location_exists
@@ -31,7 +31,7 @@ local function paths(base_path_string)
   -- Recursively walk through file paths.
   local file_paths_table = walk_file_paths(base_path_string)
   -- Sort our new table in-place, comparing by date.
-  table.sort(file_paths_table, compare_by_file_path_date)
+  table.sort(file_paths_table, Doc.compare_by_file_path_date)
   return file_paths_table
 end
 exports.paths = paths
@@ -63,19 +63,19 @@ exports.chain = chain
 -- Load contents of a file as a document table.
 -- Returns a new lua document table on success.
 -- Throws exception on failure.
-local function load_doc(file_path_string)
+local function load_doc(path)
   -- @fixme get rid of assert in `read_entire_file`
   -- return early with error instead
-  local file_string = read_entire_file(file_path_string)
+  local file_string = read_entire_file(path)
 
   -- Get YAML meta table and contents from headmatter parser.
   -- We'll use the meta table as the doc object.
-  local doc, contents_string = headmatter.parse(file_string)
+  local doc, contents = headmatter.parse(file_string)
 
   -- Since doc is a new table, go ahead and mutate it, setting contents
   -- as field.
-  doc.contents = contents_string
-  doc.relative_filepath = file_path_string
+  doc.contents = contents
+  doc.path = path
 
   return doc
 end
@@ -98,13 +98,13 @@ exports.route = route
 -- Write out the contents of a single doc object to a file.
 local function write_doc(out_path_string, doc)
   -- Create new file path from relative path and out path.
-  local file_path = path.join(out_path_string, doc.relative_filepath)
+  local file_path = path.join(out_path_string, Doc.path(doc))
   assert(write_entire_file_deep(file_path, doc.contents or ""))
 end
 exports.write_doc = write_doc
 
 -- Given an `out_path_string` and a bunch of stateful iterators, write `contents`
--- of each doc to the `relative_filepath` inside the `out_path_string` directory.
+-- of each doc to its path inside the `out_path_string` directory.
 local function write(out_path_string, iters)
   -- Remove old build directory recursively.
   if location_exists(out_path_string) then

@@ -6,7 +6,7 @@ Lettersmith is a simple, flexible, fast  _static site generator_. It's written i
 Lettersmith's goals are:
 
 - Simple
-- Flexible: everything is a plugin.
+- Flexible: everything is a plugin, and plugins are just functions.
 - Fast: build thousands of pages in seconds or less.
 
 Lettersmith is open-source and a work-in-progress. [You can help](https://github.com/gordonbrander/lettersmith/issues).
@@ -28,7 +28,7 @@ Lettersmith turns it into this:
 
 ```lua
 {
-  relative_filepath = "2015-03-01-example.md",
+  path = "2015-03-01-example.md",
   title = "Trying out Lettersmith",
   contents = "Let's add some content to this file.",
   date = "2015-03-01"
@@ -44,7 +44,7 @@ The function `lettersmith.docs(directory)` returns a list of of document tables:
 ```lua
 {
   {
-    relative_filepath = "2015-03-01-example.md",
+    path = "2015-03-01-example.md",
     title = "Trying out Lettersmith",
     contents = "Let's add some content to this file.",
     date = "2015-03-01"

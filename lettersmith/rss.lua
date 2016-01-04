@@ -11,9 +11,9 @@ local lustache = require("lustache")
 
 local path_utils = require("lettersmith.path_utils")
 
-local docs = require("lettersmith.doc")
-local derive_date = docs.derive_date
-local reformat_yyyy_mm_dd = docs.reformat_yyyy_mm_dd
+local Doc = require("lettersmith.doc")
+local derive_date = Doc.derive_date
+local reformat_yyyy_mm_dd = Doc.reformat_yyyy_mm_dd
 
 -- Note that escaping the description is uneccesary because Mustache escapes
 -- by default!
@@ -58,7 +58,7 @@ local function to_rss_item_from_doc(doc, root_url_string)
     reformat_yyyy_mm_dd(derive_date(doc), "!%a, %d %b %Y %H:%M:%S GMT")
 
   -- Create absolute url from root URL and relative path.
-  local url = path_utils.join(root_url_string, doc.relative_filepath)
+  local url = path_utils.join(root_url_string, Doc.path(doc))
   local pretty_url = url:gsub("/index%.html$", "/")
 
   -- The RSS template doesn't really change, so no need to get fancy.
@@ -98,7 +98,7 @@ local function generate_rss(config)
       -- Set date of feed to most recent document date.
       date = feed_date,
       contents = contents,
-      relative_filepath = config.path
+      path = config.path
     }
 
     return values({rss_doc})

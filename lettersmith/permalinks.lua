@@ -42,11 +42,11 @@ local extend = table_utils.extend
 
 local path_utils = require("lettersmith.path_utils")
 
-local docs = require("lettersmith.doc")
-local derive_date = docs.derive_date
-local reformat_yyyy_mm_dd = docs.reformat_yyyy_mm_dd
-local derive_slug = docs.derive_slug
-local to_slug = docs.to_slug
+local Doc = require("lettersmith.doc")
+local derive_date = Doc.derive_date
+local reformat_yyyy_mm_dd = Doc.reformat_yyyy_mm_dd
+local derive_slug = Doc.derive_slug
+local to_slug = Doc.to_slug
 
 local function is_json_safe(thing)
   local thing_type = type(thing)
@@ -65,8 +65,8 @@ local function build_json_safe_table(t, a2b)
 end
 
 local function render_doc_path_from_template(doc, url_template)
-  local file_path = doc.relative_filepath
-  local basename, dir = path_utils.basename(doc.relative_filepath)
+  local file_path = Doc.path(doc)
+  local basename, dir = path_utils.basename(file_path)
   local ext = path_utils.extension(basename)
   local file_title = path_utils.replace_extension(basename, "")
 
@@ -113,7 +113,7 @@ local function render_permalinks(template_string, root_url_string)
     local path = render_doc_path_from_template(doc, template_string)
     local url = make_pretty_url(root_url_string or "/", path)
     return merge(doc, {
-      relative_filepath = path,
+      path = path,
       url = url
     })
   end)
