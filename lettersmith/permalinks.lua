@@ -109,7 +109,6 @@ local function make_pretty_url(root_url_string, relative_path_string)
   local path_string = path_utils.join(root_url_string, relative_path_string)
   return path_string:gsub("/index%.[^.]*$", "/")
 end
-exports.make_pretty_url = make_pretty_url
 
 local function render_permalinks(template_string, root_url_string)
   return mapping(function(doc)
@@ -121,6 +120,5 @@ local function render_permalinks(template_string, root_url_string)
     })
   end)
 end
-exports.render_permalinks = render_permalinks
 
-return exports
+return render_permalinks
