@@ -15,8 +15,6 @@ local docs = require("lettersmith.docs_utils")
 local derive_date = docs.derive_date
 local reformat_yyyy_mm_dd = docs.reformat_yyyy_mm_dd
 
-local exports = {}
-
 -- Note that escaping the description is uneccesary because Mustache escapes
 -- by default!
 local rss_template_string = [[
@@ -74,18 +72,18 @@ local function to_rss_item_from_doc(doc, root_url_string)
   }
 end
 
-local function generate_rss(relative_filepath, site_url, site_title, site_description)
+local function generate_rss(config)
   local function to_rss_item(doc)
-    return to_rss_item_from_doc(doc, site_url)
+    return to_rss_item_from_doc(doc, config.site_url)
   end
 
   return function(next)
     local items = collect(take(20, map(to_rss_item, next)))
 
     local contents = render_feed({
-      site_url = site_url,
-      site_title = site_title,
-      site_description = site_description,
+      site_url = config.site_url,
+      site_title = config.site_title,
+      site_description = config.site_description,
       items = items
     })
 
@@ -93,19 +91,18 @@ local function generate_rss(relative_filepath, site_url, site_title, site_descri
     if #items > 0 then
       feed_date = items[1].date
     else
-      feed_date = os.date("!%a, %d %b %Y %H:%M:%S GMT",os.time())
+      feed_date = os.date("!%a, %d %b %Y %H:%M:%S GMT", os.time())
     end
 
     local rss_doc = {
       -- Set date of feed to most recent document date.
       date = feed_date,
       contents = contents,
-      relative_filepath = relative_filepath
+      relative_filepath = config.path
     }
 
     return values({rss_doc})
   end
 end
-exports.generate_rss = generate_rss
 
-return exports
+return generate_rss
