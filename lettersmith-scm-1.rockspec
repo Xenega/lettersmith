@@ -45,6 +45,7 @@ build = {
     ["lettersmith.format_date"] = "lettersmith/format_date.lua",
 
     -- Libraries
+    ["lettersmith.lib"] = "lettersmith/lib.lua",
     ["lettersmith.doc"] = "lettersmith/doc.lua",
     ["lettersmith.headmatter"] = "lettersmith/headmatter.lua",
     ["lettersmith.path_utils"] = "lettersmith/path_utils.lua",
