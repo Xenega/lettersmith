@@ -12,6 +12,12 @@ local function path(doc)
 end
 exports.path = path
 
+-- Read contents from doc table
+local function contents(doc)
+  return doc.contents
+end
+exports.contents = contents
+
 -- Returns the title of the doc from headmatter, or the first sentence of
 -- the contents.
 local function derive_title(doc)
@@ -144,5 +150,15 @@ local function compare_by_file_path_date(a, b)
   return derive_time_from_file_path(a) > derive_time_from_file_path(b)
 end
 exports.compare_by_file_path_date = compare_by_file_path_date
+
+-- Derive a teaser object from a doc object
+local function to_teaser(doc)
+  return {
+    title = derive_title(doc),
+    date = derive_date(doc),
+    path = path(doc)
+  }
+end
+exports.to_teaser = to_teaser
 
 return exports
