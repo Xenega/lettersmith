@@ -8,7 +8,7 @@ local function split_headmatter(str)
   -- Returns two strings, a headmatter string (which may or may not
   -- be empty) and the rest of the content string.
 
-  local delimiter = "%-+\n"
+  local delimiter = "%-%-%-*"
 
   -- Look for headmatter start tag.
   local headmatter_open_start, headmatter_open_end = str:find(delimiter)
