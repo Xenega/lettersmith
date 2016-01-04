@@ -10,7 +10,7 @@ local collect = iter.collect
 local path = require("lettersmith.path_utils")
 local wildcards = require("lettersmith.wildcards")
 
-local compare_by_file_path_date = require("lettersmith.docs_utils").compare_by_file_path_date
+local compare_by_file_path_date = require("lettersmith.doc").compare_by_file_path_date
 
 local file_utils = require("lettersmith.file_utils")
 local location_exists = file_utils.location_exists

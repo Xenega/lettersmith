@@ -11,7 +11,7 @@ local lustache = require("lustache")
 
 local path_utils = require("lettersmith.path_utils")
 
-local docs = require("lettersmith.docs_utils")
+local docs = require("lettersmith.doc")
 local derive_date = docs.derive_date
 local reformat_yyyy_mm_dd = docs.reformat_yyyy_mm_dd
 
