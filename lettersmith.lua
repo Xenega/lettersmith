@@ -5,6 +5,7 @@ local reduce = iter.reduce
 local map = iter.map
 local filter = iter.filter
 local values = iter.values
+local collect = iter.collect
 
 local path = require("lettersmith.path_utils")
 local wildcards = require("lettersmith.wildcards")
@@ -112,13 +113,14 @@ exports.write_doc = write_doc
 
 -- Given an `out_path_string` and a bunch of stateful iterators, write `contents`
 -- of each doc to the `relative_filepath` inside the `out_path_string` directory.
-local function build(out_path_string, ...)
+local function build(out_path_string, iters)
   -- Remove old build directory recursively.
   if location_exists(out_path_string) then
     assert(remove_recursive(out_path_string))
   end
 
-  for iter in values({...}) do
+  -- @TODO might be nice to have a `concat` function for iter
+  for iter in values(iters) do
     for doc in iter do
       write_doc(out_path_string, doc)
     end
@@ -126,17 +128,28 @@ local function build(out_path_string, ...)
 end
 exports.build = build
 
--- Transparently require submodules in the lettersmith namespace.
--- Exports of the module lettersmith still have priority.
--- Convenient for client/build scripts, not intended for modules.
-local function autoimport()
-  local function get_import(t, k)
-    t[k] = require("lettersmith." .. k)
-    return m
-  end
-
-  return setmetatable(shallow_copy(exports), { __index = get_import })
+-- Load and instantiate plugin from config object.
+local function load_plugin(plugin_config)
+  local plugin = require(plugin_config[1])
+  return plugin(plugin_config[2])
 end
-exports.autoimport = autoimport
+
+local function load_route(route_config)
+  local plugin = collect(map(load_plugin, values(route_config.plugins)))
+  return route(route_config.match, plugin)
+end
+
+local function build_config(config)
+  local out = config.out or 'out'
+  local iters = collect(map(load_route, values(config.routes)))
+  return build(out, iters)
+end
+exports.build_config = build_config
+
+-- Load a config file and build from it
+local function load_config(lua_file)
+  return build_config(require(lua_file))
+end
+exports.load_config = load_config
 
 return exports
