@@ -1,19 +1,5 @@
 --[[
-Lettersmith Mustache
-
-Template your docs with mustache.
-
-Usage:
-
-    local use_mustache = require("lettersmith.mustache").use_mustache
-    local lettersmith = require("lettersmith")
-    local pipe = lettersmith.pipe
-    local docs = lettersmith.docs
-
-    pipe(
-      docs("raw"),
-      render_mustache "templates/template.mustache"
-    )
+Lettersmith Mustache: template your docs with mustache.
 
 Note that after you've templated your docs, the `contents` field will contain
 all of the HTML, including the template.
