@@ -51,20 +51,11 @@ local function call_with(x, f)
   return f(x)
 end
 
--- Pipe a single value through many functions. Pipe will call functions from
--- left-to-right, so the first function in the list gets called first, returning
--- a new value which gets passed to the second function, etc.
-local function pipe(x, ...)
-  return reduce(call_with, x, ipairs({...}))
-end
-exports.pipe = pipe
-
 -- Chain many functions together. This is like a classic compose function, but
--- left-to-right, instead of RTL. We think this is easier to read in many cases.
-local function chain(...)
-  local f = {...}
+-- composes a table of functions left-to-right, instead of RTL.
+local function chain(functions)
   return function(x)
-    return pipe(x, table.unpack(f))
+    return reduce(call_with, x, ipairs(functions))
   end
 end
 exports.chain = chain
@@ -98,8 +89,9 @@ exports.docs = docs
 
 -- Route all docs matching `wildcard_string` through a list of plugins.
 -- Returns an iterator of docs.
-local function route(wildcard_string, ...)
-  return pipe(map(load_doc, query(wildcard_string)), ...)
+local function route(wildcard_string, functions)
+  local plugin = chain(functions)
+  return plugin(map(load_doc, query(wildcard_string)))
 end
 exports.route = route
 
@@ -135,8 +127,8 @@ local function load_plugin(plugin_config)
 end
 
 local function load_route(route_config)
-  local plugin = collect(map(load_plugin, values(route_config.plugins)))
-  return route(route_config.match, plugin)
+  local functions = collect(map(load_plugin, values(route_config.plugins)))
+  return route(route_config.match, functions)
 end
 
 local function build_config(config)
