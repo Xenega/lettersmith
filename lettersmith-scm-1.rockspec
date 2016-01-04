@@ -28,9 +28,7 @@ dependencies = {
   "luafilesystem >= 1.6",
   "lustache >= 1.3",
   "yaml >= 1.1",
-  "lua-discount >= 1.2",
-  "md5",
-  "serpent >= 0.25",
+  "lua-discount >= 1.2"
 }
 build = {
   type = "builtin",
@@ -44,11 +42,7 @@ build = {
     ["lettersmith.markdown"] = "lettersmith/markdown.lua",
     ["lettersmith.meta"] = "lettersmith/meta.lua",
     ["lettersmith.rss"] = "lettersmith/rss.lua",
-    ["lettersmith.paging"] = "lettersmith/paging.lua",
     ["lettersmith.format_date"] = "lettersmith/format_date.lua",
-    ["lettersmith.hash"] = "lettersmith/hash.lua",
-    ["lettersmith.serialization"] = "lettersmith/serialization.lua",
-    ["lettersmith.debug"] = "lettersmith/debug.lua",
 
     -- Libraries
     ["lettersmith.docs_utils"] = "lettersmith/docs_utils.lua",
