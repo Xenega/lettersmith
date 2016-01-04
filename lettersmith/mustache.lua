@@ -19,8 +19,6 @@ Note that after you've templated your docs, the `contents` field will contain
 all of the HTML, including the template.
 --]]
 
-local exports = {}
-
 local lustache = require("lustache")
 
 local mapping = require("lettersmith.plugin_utils").mapping
@@ -37,16 +35,6 @@ local function load_and_render_template(template_path_string, context)
   return lustache:render(template, context)
 end
 
-local function render_mustache(template_path_string)
-  return mapping(function (doc)
-    -- @TODO should also have render function for {{site_url "filename"}}
-    -- that will create un-breakable permalink.
-    local rendered = load_and_render_template(template_path_string, doc)
-    return merge(doc, { contents = rendered })    
-  end)
-end
-exports.render_mustache = render_mustache
-
 -- `choose_mustache` will only template files that have a `template` field in
 -- their headmatter. If the file name provided in the `template` field is
 -- invalid, an error will be thrown.
@@ -60,6 +48,5 @@ local function choose_mustache(template_dir_string)
     return merge(doc, { contents = rendered })    
   end)
 end
-exports.choose_mustache = choose_mustache
 
-return exports
+return choose_mustache
