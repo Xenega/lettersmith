@@ -47,19 +47,6 @@ local function query(wildcard_string)
   end, values(paths(base_path_string)))
 end
 
-local function call_with(x, f)
-  return f(x)
-end
-
--- Chain many functions together. This is like a classic compose function, but
--- composes a table of functions left-to-right, instead of RTL.
-local function chain(functions)
-  return function(x)
-    return reduce(call_with, x, ipairs(functions))
-  end
-end
-exports.chain = chain
-
 -- Load contents of a file as a document table.
 -- Returns a new lua document table on success.
 -- Throws exception on failure.
@@ -81,19 +68,29 @@ local function load_doc(path)
 end
 exports.load_doc = load_doc
 
+-- Create an iterator of docs matching `wildcard_string`.
+local function match(wildcard_string)
+  return map(load_doc, query(wildcard_string))
+end
+
+local function call_with(x, f)
+  return f(x)
+end
+
+-- Chain many functions together. This is like a classic compose function, but
+-- composes a table of functions left-to-right, instead of RTL.
+local function chain(functions)
+  return function(x)
+    return reduce(call_with, x, ipairs(functions))
+  end
+end
+exports.chain = chain
+
 -- Given a base path, returns a table of documents under that path.
 local function docs(base_path_string)
   return map(load_doc, values(paths(base_path_string)))
 end
 exports.docs = docs
-
--- Route all docs matching `wildcard_string` through a list of plugins.
--- Returns an iterator of docs.
-local function route(wildcard_string, functions)
-  local plugin = chain(functions)
-  return plugin(map(load_doc, query(wildcard_string)))
-end
-exports.route = route
 
 -- Write out the contents of a single doc object to a file.
 local function write_doc(out_path_string, doc)
@@ -121,14 +118,24 @@ end
 exports.write = write
 
 -- Load and instantiate plugin from config object.
-local function load_plugin(plugin_config)
-  local plugin = require(plugin_config[1])
-  return plugin(plugin_config[2])
+local function load_plugin(plugin_table)
+  local plugin = require(plugin_table[1])
+  return plugin(plugin_table[2])
 end
 
-local function load_route(route_config)
-  local functions = collect(map(load_plugin, values(route_config.plugins)))
-  return route(route_config.match, functions)
+local function load_plugins(plugins_table)
+  return chain(collect(map(load_plugin, values(plugins_table))))
+end
+
+local function load_route(route_table)
+  local docs = match(route_table.match)
+  local plugins_table = route_table.plugins
+  if plugins_table and #plugins_table > 0 then
+    local plugin = load_plugins(plugins_table)
+    return plugin(docs)
+  else
+    return docs
+  end
 end
 
 -- Build files from a config object
