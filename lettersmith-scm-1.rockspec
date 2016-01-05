@@ -43,6 +43,7 @@ build = {
     ["lettersmith.markdown"] = "lettersmith/markdown.lua",
     ["lettersmith.meta"] = "lettersmith/meta.lua",
     ["lettersmith.rss"] = "lettersmith/rss.lua",
+    ["lettersmith.archive"] = "lettersmith/archive.lua",
     ["lettersmith.format_date"] = "lettersmith/format_date.lua",
 
     -- Libraries
