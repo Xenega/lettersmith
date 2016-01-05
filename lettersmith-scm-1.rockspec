@@ -52,6 +52,7 @@ build = {
     ["lettersmith.headmatter"] = "lettersmith/headmatter.lua",
     ["lettersmith.path_utils"] = "lettersmith/path_utils.lua",
     ["lettersmith.wildcards"] = "lettersmith/wildcards.lua",
+    ["lettersmith.tokens"] = "lettersmith/tokens.lua",
     ["lettersmith.file_utils"] = "lettersmith/file_utils.lua",
     ["lettersmith.table_utils"] = "lettersmith/table_utils.lua",
     ["lettersmith.plugin_utils"] = "lettersmith/plugin_utils.lua"

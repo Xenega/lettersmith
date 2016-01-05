@@ -41,65 +41,15 @@ local merge = table_utils.merge
 local extend = table_utils.extend
 
 local path_utils = require("lettersmith.path_utils")
+local tokens = require("lettersmith.tokens")
 
 local Doc = require("lettersmith.doc")
-local derive_date = Doc.derive_date
-local reformat_yyyy_mm_dd = Doc.reformat_yyyy_mm_dd
-local derive_slug = Doc.derive_slug
-local to_slug = Doc.to_slug
-
-local function is_json_safe(thing)
-  local thing_type = type(thing)
-  return thing_type == "string"
-end
-
-local function build_json_safe_table(t, a2b)
-  -- Filter and map values in t, retaining fields that return a value.
-  -- Returns new table with values mapped via function `transform`.
-  local out = {}
-  for k, v in pairs(t) do
-    -- Only keep fields which are JSON safe.
-    if is_json_safe(k) and is_json_safe(v) then out[k] = a2b(v) end
-  end
-  return out
-end
 
 local function render_doc_path_from_template(doc, url_template)
-  local file_path = Doc.path(doc)
-  local basename, dir = path_utils.basename(file_path)
-  local ext = path_utils.extension(basename)
-  local file_title = path_utils.replace_extension(basename, "")
-
-  -- Uses title as slug, but falls back to the file name, sans extension.
-  local slug = derive_slug(doc)
-
-  -- This gives you a way to favor file_name.
-  local file_slug = to_slug(file_title)
-
-  local yyyy, yy, mm, dd = reformat_yyyy_mm_dd(derive_date(doc), "%Y %y %m %d")
-    :match("(%d%d%d%d) (%d%d) (%d%d) (%d%d)")
-
-  -- Generate context object that contains only strings in doc, mapped to slugs
-  local doc_context = build_json_safe_table(doc, to_slug)
-
-  -- Merge doc context and extra template vars, favoring template vars.
-  local context = extend({
-    basename = basename,
-    dir = dir,
-    file_path = file_path,
-    file_slug = file_slug,
-    slug = slug,
-    ext = ext,
-    yyyy = yyyy,
-    yy = yy,
-    mm = mm,
-    dd = dd
-  }, doc_context)
-
-  local path_string = url_template:gsub(":([%w_]+)", context)
-
+  local doc_tokens = Doc.read_tokens(doc)
+  local path_string = tokens.render(url_template, doc_tokens)
   -- Add index file to end of path and return.
-  return path_string:gsub("/$", "/index" .. ext)
+  return path_string:gsub("/$", "/index" .. doc_tokens.ext)
 end
 
 -- Remove "index" from end of URL.

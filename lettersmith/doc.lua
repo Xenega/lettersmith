@@ -161,4 +161,36 @@ local function to_teaser(doc)
 end
 exports.to_teaser = to_teaser
 
+-- Read a table of url tokens from a doc table.
+-- The resulting table contains useful path tokens like year, extension, etc.
+local function read_tokens(doc)
+  local path = Doc.path(doc)
+  local basename, dir = path_utils.basename(path)
+  local ext = path_utils.extension(basename)
+  local file_title = path_utils.replace_extension(basename, "")
+
+  -- Uses title as slug, but falls back to the file name, sans extension.
+  local slug = derive_slug(doc)
+
+  -- This gives you a way to favor file_name.
+  local file_slug = to_slug(file_title)
+
+  local yyyy, yy, mm, dd = reformat_yyyy_mm_dd(derive_date(doc), "%Y %y %m %d")
+    :match("(%d%d%d%d) (%d%d) (%d%d) (%d%d)")
+
+  return {
+    basename = basename,
+    dir = dir,
+    path = path,
+    file_slug = file_slug,
+    slug = slug,
+    ext = ext,
+    yyyy = yyyy,
+    yy = yy,
+    mm = mm,
+    dd = dd
+  }
+end
+exports.read_tokens = read_tokens
+
 return exports
