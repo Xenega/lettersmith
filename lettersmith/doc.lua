@@ -164,8 +164,8 @@ exports.to_teaser = to_teaser
 -- Read a table of url tokens from a doc table.
 -- The resulting table contains useful path tokens like year, extension, etc.
 local function read_tokens(doc)
-  local path = Doc.path(doc)
-  local basename, dir = path_utils.basename(path)
+  local file_path = path(doc)
+  local basename, dir = path_utils.basename(file_path)
   local ext = path_utils.extension(basename)
   local file_title = path_utils.replace_extension(basename, "")
 
@@ -181,7 +181,7 @@ local function read_tokens(doc)
   return {
     basename = basename,
     dir = dir,
-    path = path,
+    path = file_path,
     file_slug = file_slug,
     slug = slug,
     ext = ext,

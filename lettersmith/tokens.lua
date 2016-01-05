@@ -8,3 +8,5 @@ local function render(template, context)
   return template:gsub(":([%w_]+)", context)
 end
 exports.render = render
+
+return exports
