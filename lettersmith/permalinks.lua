@@ -46,11 +46,10 @@ local tokens = require("lettersmith.tokens")
 
 local Doc = require("lettersmith.doc")
 
-local function render_doc_path_from_template(doc, url_template)
-  local doc_tokens = Doc.read_tokens(doc)
-  local path_string = tokens.render(url_template, doc_tokens)
+local function render_url_template(url_template, meta)
+  local path_string = tokens.render(url_template, meta)
   -- Add index file to end of path and return.
-  return path_string:gsub("/$", "/index" .. doc_tokens.ext)
+  return path_string:gsub("/$", "/index" .. meta.ext)
 end
 
 -- Remove "index" from end of URL.
@@ -61,7 +60,7 @@ end
 
 local function render(template_string, root_url_string)
   return mapping(function(doc)
-    local path = render_doc_path_from_template(doc, template_string)
+    local path = render_url_template(template_string, Doc.read_tokens(doc))
     local url = make_pretty_url(root_url_string or "/", path)
     return Doc.update_out(doc, path)
   end)

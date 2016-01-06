@@ -27,12 +27,12 @@ local update_meta = Lens.cursor(Meta)
 exports.update_meta = update_meta
 
 local function get_out(doc)
-  return doc.out
+  return doc.out_path
 end
 exports.get_out = get_out
 
-local function set_out(doc, out)
-  return merge(doc, {out = out})
+local function set_out(doc, path)
+  return merge(doc, {out_path = path})
 end
 
 local Out = Lens.create({
@@ -42,6 +42,11 @@ local Out = Lens.create({
 
 local update_out = Lens.cursor(Out)
 exports.update_out = update_out
+
+local function get_in(doc)
+  return doc.in_path
+end
+exports.get_in = get_in
 
 -- Returns the title of the doc from headmatter, or the first sentence of
 -- the contents.

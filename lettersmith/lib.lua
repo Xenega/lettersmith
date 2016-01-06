@@ -74,25 +74,33 @@ local function chain(functions)
 end
 exports.chain = chain
 
+-- Define error message strings
+local error_out_path = [[
+Out path must be different from in path.
+You should set the out path with a plugin.
+In: %s
+Out: %s
+]]
+
+local error_write_file = [[
+File "%s" failed to write
+]]
+
 -- Write out the contents of a single doc object to a file.
 local function write_through(compile, doc)
   -- Create new file path from relative path and out path.
   assert(
     Doc.get_out(doc) ~= Doc.get_in(doc),
-    string.format([[
-    Out path must be different from in path.
-    You should set the out path with a plugin.
-    In: %s
-    Out: %s]], Doc.get_out(doc), Doc.get_in(doc))
+    string.format(error_out_path, Doc.get_out(doc), Doc.get_in(doc))
   )
 
   -- Load and compile contents
-  local meta, contents = load_file(path)
+  local meta, contents = load_file(Doc.get_in(doc))
   local compiled = compile(contents, Doc.get_meta(doc))
 
   assert(
     write_entire_file_deep(Doc.get_out(doc), compiled),
-    string.format([[File "%s" failed to write]], Doc.get_out(doc))
+    string.format(error_write_file, Doc.get_out(doc))
   )
 end
 
