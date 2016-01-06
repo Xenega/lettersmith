@@ -9,12 +9,9 @@ description = {
   detailed = [[
   Lettersmith is a static site generator. It's goals are:
 
-  - Simple: no fancy classes, or conventions. Just a small library for
-    transforming files with functions.
+  - Simple: just a small library for transforming files with functions.
   - Flexible: everything is a plugin.
   - Fast: build thousands of pages in seconds or less.
-  - Embeddable: we're going to put this thing in an Mac app so normal people
-    can use it.
 
   It ships with plugins for blogging, Markdown and Mustache, but can be easily
   configured to build any type of static site.
