@@ -33,6 +33,7 @@ Usage:
       template = ":yyyy/:mm/:slug"
     })
 --]]
+local exports = {}
 
 local mapping = require("lettersmith.plugin_utils").mapping
 
@@ -58,15 +59,13 @@ local function make_pretty_url(root_url_string, relative_path_string)
   return path_string:gsub("/index%.[^.]*$", "/")
 end
 
-local function render_permalinks(template_string, root_url_string)
+local function render(template_string, root_url_string)
   return mapping(function(doc)
     local path = render_doc_path_from_template(doc, template_string)
     local url = make_pretty_url(root_url_string or "/", path)
-    return merge(doc, {
-      path = path,
-      url = url
-    })
+    return Doc.update_out(doc, path)
   end)
 end
+exports.render = render
 
-return render_permalinks
+return exports

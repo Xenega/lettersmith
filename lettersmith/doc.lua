@@ -5,18 +5,43 @@ Handy functions for working with `doc` tables.
 local exports = {}
 
 local path_utils = require("lettersmith.path_utils")
+local Lens = require("lettersmith.lens")
+local merge = require("lettersmith.table_utils").merge
 
--- Read path from doc table
-local function path(doc)
-  return doc.path
+local function get_meta(doc)
+  return doc.meta
 end
-exports.path = path
+exports.get_meta = get_meta
 
--- Read contents from doc table
-local function contents(doc)
-  return doc.contents
+local function set_meta(doc, meta)
+  return merge(doc, {meta = meta})
 end
-exports.contents = contents
+
+local Meta = Lens.create({
+  get = get_meta,
+  set = set_meta,
+  update = merge
+})
+
+local update_meta = Lens.cursor(Meta)
+exports.update_meta = update_meta
+
+local function get_out(doc)
+  return doc.out
+end
+exports.get_out = get_out
+
+local function set_out(doc, out)
+  return merge(doc, {out = out})
+end
+
+local Out = Lens.create({
+  get = get_out,
+  set = set_out
+})
+
+local update_out = Lens.cursor(Out)
+exports.update_out = update_out
 
 -- Returns the title of the doc from headmatter, or the first sentence of
 -- the contents.
@@ -55,7 +80,7 @@ end
 -- `derive_slug` will do its best to create something nice.
 -- Returns a slug made from title, filename or contents.
 local function derive_slug(doc)
-  local file_name_slug = find_slug_in_file_path(path(doc))
+  local file_name_slug = find_slug_in_file_path(get_out(doc))
 
   -- Prefer title if present.
   if doc.title then
@@ -72,16 +97,12 @@ local function derive_slug(doc)
 end
 exports.derive_slug = derive_slug
 
+local yyyy_mm_dd = "(%d%d%d%d)%-(%d%d)%-(%d%d)"
+
 -- Date helpers. See http://www.lua.org/pil/22.1.html.
-
--- Given a `yyyy-mm-dd` date string, return `yyyy`, `mm` and `dd` as separate
--- return values. Returns values or nil if there is no match.
-local function destructure_yyyy_mm_dd(date_string)
-  return date_string:match("(%d%d%d%d)%-(%d%d)%-(%d%d)")
-end
-
 local function yyyy_mm_dd_to_time(date_string)
-  local yyyy, mm, dd = destructure_yyyy_mm_dd(date_string)
+  -- Given a `yyyy-mm-dd` date string, return `yyyy`, `mm` and `dd`.
+  local yyyy, mm, dd = date_string:match(yyyy_mm_dd)
   return os.time({ year = yyyy, month = mm, day = dd })
 end
 exports.yyyy_mm_dd_to_time = yyyy_mm_dd_to_time
@@ -120,7 +141,7 @@ local epoch_yyyy_mm_dd = os.date("%F", 0)
 -- Returns a `YYYY-MM-DD` date string.
 local function derive_date(doc)
   local headmatter_date_string = doc.date and match_yyyy_mm_dd(doc.date)
-  local file_path_date_string = match_yyyy_mm_dd_in_file_path(path(doc))
+  local file_path_date_string = match_yyyy_mm_dd_in_file_path(get_out(doc))
 
   if headmatter_date_string then
     return headmatter_date_string
@@ -156,7 +177,7 @@ local function to_teaser(doc)
   return {
     title = derive_title(doc),
     date = derive_date(doc),
-    path = path(doc)
+    path = get_out(doc)
   }
 end
 exports.to_teaser = to_teaser
@@ -164,7 +185,7 @@ exports.to_teaser = to_teaser
 -- Read a table of url tokens from a doc table.
 -- The resulting table contains useful path tokens like year, extension, etc.
 local function read_tokens(doc)
-  local file_path = path(doc)
+  local file_path = get_out(doc)
   local basename, dir = path_utils.basename(file_path)
   local ext = path_utils.extension(basename)
   local file_title = path_utils.replace_extension(basename, "")

@@ -3,6 +3,8 @@ local exports = {}
 local iter = require("iter")
 local map = iter.map
 local filter = iter.filter
+local collect = iter.collect
+local values = iter.values
 
 local table_utils = require("lettersmith.table_utils")
 local merge = table_utils.merge
@@ -10,23 +12,14 @@ local merge = table_utils.merge
 -- Lift a function into a function that maps over a list table.
 local function mapping(a2b)
   return function(docs)
-    return map(a2b, docs)
+    return collect(map(a2b, values(docs)))
   end
 end
 exports.mapping = mapping
 
--- A specialized type of mapping function that runs the `doc.contents` field
--- through a function, returning a new doc object.
-local function rendering(f)
-  return mapping(function (doc)
-    return merge(doc, {contents = f(doc.contents)})
-  end)
-end
-exports.rendering = rendering
-
 local function filtering(predicate)
   return function(docs)
-    return filter(predicate, docs)
+    return collect(filter(predicate, values(docs)))
   end
 end
 exports.filtering = filtering

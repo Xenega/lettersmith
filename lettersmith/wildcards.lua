@@ -45,4 +45,11 @@ local function is_match(s, wildcard_string)
 end
 exports.is_match = is_match
 
+local function matching(wildcard_string)
+  return function (s)
+    return is_match(s, wildcard_string)
+  end
+end
+exports.matching = matching
+
 return exports
