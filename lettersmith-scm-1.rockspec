@@ -47,6 +47,7 @@ build = {
 
     -- Libraries
     ["lettersmith.lib"] = "lettersmith/lib.lua",
+    ["lettersmith.lens"] = "lettersmith/lens.lua",
     ["lettersmith.doc"] = "lettersmith/doc.lua",
     ["lettersmith.headmatter"] = "lettersmith/headmatter.lua",
     ["lettersmith.path_utils"] = "lettersmith/path_utils.lua",
