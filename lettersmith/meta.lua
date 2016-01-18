@@ -3,13 +3,9 @@ Lettersmith Meta
 
 Add metadata to every doc object. This is useful for things like site meta.
 --]]
-local merge = require("lettersmith.table_utils").merge
-local mapping = require("lettersmith.plugin_utils").mapping
+local Docs = require("lettersmith.docs")
+local Doc = require("lettersmith.doc")
 
-local function use_meta(meta)
-  return mapping(function (doc)
-    return merge(meta, doc)
-  end)
-end
+local mix_meta = Docs.mapping(Doc.update_meta)
 
-return use_meta
+return mix_meta

@@ -44,14 +44,17 @@ build = {
 
     -- Libraries
     ["lettersmith.lib"] = "lettersmith/lib.lua",
-    ["lettersmith.lens"] = "lettersmith/lens.lua",
+    ["lettersmith.prelude"] = "lettersmith/prelude.lua",
+    ["lettersmith.cursor"] = "lettersmith/cursor.lua",
+    ["lettersmith.docs"] = "lettersmith/docs.lua",
     ["lettersmith.doc"] = "lettersmith/doc.lua",
+    ["lettersmith.doc.meta"] = "lettersmith/doc/meta.lua",
+    ["lettersmith.doc.view"] = "lettersmith/doc/view.lua",
     ["lettersmith.headmatter"] = "lettersmith/headmatter.lua",
-    ["lettersmith.path_utils"] = "lettersmith/path_utils.lua",
+    ["lettersmith.path"] = "lettersmith/path.lua",
     ["lettersmith.wildcards"] = "lettersmith/wildcards.lua",
     ["lettersmith.tokens"] = "lettersmith/tokens.lua",
     ["lettersmith.file_utils"] = "lettersmith/file_utils.lua",
-    ["lettersmith.table_utils"] = "lettersmith/table_utils.lua",
-    ["lettersmith.plugin_utils"] = "lettersmith/plugin_utils.lua"
+    ["lettersmith.table_utils"] = "lettersmith/table_utils.lua"
   }
 }

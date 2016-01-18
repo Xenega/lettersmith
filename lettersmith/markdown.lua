@@ -3,10 +3,12 @@ Lettersmith Markdown
 Renders markdown in contents field.
 --]]
 local markdown = require("discount")
-local rendering = require("lettersmith.plugin_utils").rendering
+local Docs = require("lettersmith.docs")
 
-local function render_markdown()
-  return rendering(markdown)
+local function render_markdown(docs, config)
+  return Docs.update_view(docs, function (doc)
+    return markdown(context.contents, config)
+  end)
 end
 
 return render_markdown

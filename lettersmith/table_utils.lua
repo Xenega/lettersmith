@@ -21,12 +21,12 @@ local function merge(a, b)
 end
 exports.merge = merge
 
-local function shallow_copy(t)
+local function copy(t)
   return extend({}, t)
 end
-exports.shallow_copy = shallow_copy
+exports.copy = copy
 
-local function slice_table(t, from, to)
+local function slice(t, from, to)
   to = to or math.huge
   from = from or 1
 
@@ -41,25 +41,11 @@ local function slice_table(t, from, to)
 
   return sliced_t
 end
-exports.slice_table = slice_table
+exports.slice = slice
 
--- Partition an iterator into "chunks", returning an iterator of tables
--- containing `n` items each.
--- Returns a `Reducible` table.
-local function partition(n, list_table)
-  local function step_chunk(chunk, input)
-    if #chunk < n then
-      return append(chunk, input)
-    else
-      -- If chunk is full, step value
-      value = step(chunk, value)
-      return {input}
-    end
-  end
-  -- Capture the last chunk, and reduce it with `step`.
-  local last_chunk = reduce(step_chunk, value, ipairs(list_table))
-  return step(last_chunk, value)
+local function sort(t, compare)
+  return table.sort(slice(t), compare)
 end
-exports.partition = partition
+exports.sort = sort
 
 return exports

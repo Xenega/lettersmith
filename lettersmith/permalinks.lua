@@ -22,49 +22,24 @@ For example, this template:
 ...would result in a permalink like this:
 
     2014/10/19/example/
-
-Usage:
-
-    local use_permalinks = require('lettersmith.permalinks').use_permalinks
-    local lettersmith = require('lettersmith')
-
-    lettersmith.generate("raw", "out", use_permalinks {
-      query = "*.html",
-      template = ":yyyy/:mm/:slug"
-    })
 --]]
-local exports = {}
 
-local mapping = require("lettersmith.plugin_utils").mapping
-
-local table_utils = require("lettersmith.table_utils")
-local merge = table_utils.merge
-local extend = table_utils.extend
-
-local path_utils = require("lettersmith.path_utils")
-local tokens = require("lettersmith.tokens")
-
+local Plugin = require("lettersmith.plugin")
+local Path = require("lettersmith.path")
+local Tokens = require("lettersmith.tokens")
 local Doc = require("lettersmith.doc")
 
-local function render_url_template(url_template, meta)
-  local path_string = tokens.render(url_template, meta)
-  -- Add index file to end of path and return.
-  return path_string:gsub("/$", "/index" .. meta.ext)
-end
-
--- Remove "index" from end of URL.
-local function make_pretty_url(root_url_string, relative_path_string)
-  local path_string = path_utils.join(root_url_string, relative_path_string)
-  return path_string:gsub("/index%.[^.]*$", "/")
-end
-
-local function render(template_string, root_url_string)
+local function permalinks(config)
   return mapping(function(doc)
-    local path = render_url_template(template_string, Doc.read_tokens(doc))
-    local url = make_pretty_url(root_url_string or "/", path)
-    return Doc.update_out(doc, path)
+    local path = Path.view(config.template, Doc.read_tokens(doc))
+    local url = Path.to_url(path, config.site_url)
+    doc = Doc.update_out(doc, path)
+    doc = Doc.update_meta(doc, {
+      url = url,
+      site_url = site_url
+    })
+    return doc
   end)
 end
-exports.render = render
 
-return exports
+return permalinks

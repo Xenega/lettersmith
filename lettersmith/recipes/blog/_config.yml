@@ -1,0 +1,11 @@
+# Where things are
+source:       .
+destination:  ./_site
+plugins_dir:  ./_plugins
+layouts_dir:  ./_layouts
+includes_dir: ./_includes
+data_dir:     ./_data
+
+# Pagination
+per_page: 10
+paginate_path: /page:num

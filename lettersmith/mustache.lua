@@ -9,47 +9,39 @@ local exports = {}
 
 local lustache = require("lustache")
 
-local merge = require("lettersmith.table_utils").merge
-
 local file_utils = require("lettersmith.file_utils")
 local read_entire_file = file_utils.read_entire_file
 
-local path_utils = require("lettersmith.path_utils")
+local Path = require("lettersmith.path")
 
-local function load_and_render_template(template_path_string, meta)
-  local template = read_entire_file(template_path_string)
-  return lustache:render(template, meta)
+local function load_and_render_template(template_path, context)
+  local template = read_entire_file(template_path)
+  return lustache:render(template, context)
 end
 
 -- `choose_mustache` will only template files that have a `template` field in
 -- their headmatter. If the file name provided in the `template` field is
 -- invalid, an error will be thrown.
 local function choose(template_dir_string)
-  return function (contents, meta)
+  return function (context)
     -- Skip document if it doesn't have a template field.
-    if not meta.template then return contents end
-    local template_path = path_utils.join(template_dir_string, meta.template)
-    return load_and_render_template(
-      template_path,
-      merge(meta, {contents = contents})
-    )
+    if not context.template then return contents end
+    local template_path = Path.join(template_dir_string, context.template)
+    return load_and_render_template(template_path, context)
   end
 end
 exports.choose = choose
 
 local function render(template_path)
-  return function (contents, meta)
-    return load_and_render_template(
-      template_path,
-      merge(meta, {contents = contents})
-    )
+  return function (context)
+    return load_and_render_template(template_path, context)
   end
 end
 exports.render = render
 
 -- Render mustache tokens within the contents field.
-local function render_contents(contents, meta)
-    return lustache:render(contents, meta)
+local function render_contents(context)
+  return lustache:render(context.contents, context)
 end
 exports.render_contents = render_contents
 

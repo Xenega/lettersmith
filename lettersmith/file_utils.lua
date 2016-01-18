@@ -3,6 +3,8 @@ File system utilities.
 
 A thin wrapper around `lua-file-system` and `io`, tailored to Lettersmith's
 particular needs.
+
+@TODO this should be merged with Path.
 ]]--
 
 local lfs = require("lfs")
@@ -14,7 +16,12 @@ local iter = require("iter")
 local reductions = iter.reductions
 local values = iter.values
 
-local path_utils = require("lettersmith.path_utils")
+local comp = require("lettersmith.prelude").comp
+
+local Path = require("lettersmith.path")
+
+local Yaml = require('yaml')
+local Headmatter = require('headmatter')
 
 local exports = {}
 
@@ -70,7 +77,7 @@ end
 
 -- Returns every iteration of a path traversal, as an iterator.
 local function traversals(path_string)
-  return reductions(step_traversal, "", values(path_utils.parts(path_string)))
+  return reductions(step_traversal, "", values(Path.parts(path_string)))
 end
 
 local function mkdir_deep(path_string)
@@ -88,7 +95,7 @@ end
 local function remove_recursive(location)
   if is_dir(location) then
     for sub_location in children(location) do
-      local sub_path = path_utils.join(location, sub_location)
+      local sub_path = Path.join(location, sub_location)
       local is_success, message = remove_recursive(sub_path)
       if not is_success then return is_success, message end
     end
@@ -97,45 +104,54 @@ local function remove_recursive(location)
 end
 exports.remove_recursive = remove_recursive
 
-local function read_entire_file(filepath)
+local function read_entire_file(path)
   -- Read entire contents of file and return as string.
   -- Will return string, or throw error if file can not be read.
-  local f = assert(io.open(filepath, "r"))
+  local f = assert(io.open(path, "r"))
   local contents = f:read("*all")
   f:close()
   return contents
 end
 exports.read_entire_file = read_entire_file
 
-local function write_entire_file(filepath, contents)
-  local f, message = io.open(filepath, "w")
+-- Read a file's contents as YAML data
+local read_yaml = comp(Yaml.load, read_entire_file)
+exports.read_yaml = read_yaml
+
+local read_contents = comp(Headmatter.parse_contents, read_entire_file)
+exports.read_contents = read_contents
+
+local read_headmatter = comp(Headmatter.parse_headmatter, read_entire_file)
+exports.read_headmatter = read_headmatter
+
+local function write(path, s)
+  local f, message = io.open(path, "w")
 
   if f == nil then return f, message end
 
-  f:write(contents)
+  f:write(s)
 
   return f:close()
 end
-exports.write_entire_file = write_entire_file
 
-local function write_entire_file_deep(filepath, contents)
+local function write_deep(path, contents)
   -- Write entire contents to file at deep directory location.
   -- This function will make sure all the necessary directories exist before
   -- creating the file.
-  local basename, dirs = path_utils.basename(filepath)
+  local basename, dirs = Path.basename(path)
   local d, message = mkdir_deep(dirs)
 
   if d == nil then return d, message end
 
-  return write_entire_file(filepath, contents)
+  return write(path, contents)
 end
-exports.write_entire_file_deep = write_entire_file_deep
+exports.write_deep = write_deep
 
 -- Recursively walk through directory at `path_string`, appending
 -- items found to table `t`.
 local function walk_file_paths_into(t, path_string)
   for f in children(path_string) do
-    local filepath = path_utils.join(path_string, f)
+    local filepath = Path.join(path_string, f)
 
     if is_file(filepath) then
       table.insert(t, filepath)

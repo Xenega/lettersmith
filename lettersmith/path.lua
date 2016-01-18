@@ -1,15 +1,23 @@
 --[[
 A tiny library for working with paths. Tiny, because it is simple.
 
-Only Unix-style paths are supported. Windows-style `\` are not handled.
-My hypothesis is that it's less error-prone for a path library to support a
-consistant API surface. If you need Windows paths, you can write conversion
-functions that will let you switch from Win to Unix and back.
+Only Unix-style paths are supported. Windows-style `\` are currently not handled.
 ]]--
 
-local path = {}
+local Path = {}
 
-function path.remove_trailing_slash(s)
+local Tokens = require("lettersmith.tokens")
+
+-- Update a view function
+function Path.update(prev_path, next_path)
+  if type(next_path) === 'string' then
+    return next_path
+  else
+    return prev_path
+  end
+end
+
+function Path.remove_trailing_slash(s)
   -- Remove trailing slash from string. Will not remove slash if it is the
   -- only character in the string.
   return s:gsub('(.)%/$', '%1')
@@ -61,7 +69,7 @@ local function resolve_dir_traversals(s)
   s = s:gsub('<LEADING_DOUBLE_DOT>', "..")
 
   -- The patterns above can leave behind trailing slashes. Trim them.
-  s = path.remove_trailing_slash(s)
+  s = Path.remove_trailing_slash(s)
 
   -- If string ended up empty, return "."
   s = make_same_dir_explicit(s)
@@ -69,7 +77,7 @@ local function resolve_dir_traversals(s)
   return s
 end
 
-function path.normalize(s)
+function Path.normalize(s)
   --[[
   /foo/bar          -> /foo/bar
   /foo/bar/         -> /foo/bar
@@ -85,14 +93,14 @@ function path.normalize(s)
   return s
 end
 
-function path.join(a, b)
-  return path.normalize(path.normalize(a) .. '/' .. path.normalize(b))
+function Path.join(a, b)
+  return Path.normalize(Path.normalize(a) .. '/' .. Path.normalize(b))
 end
 
-function path.shift(s)
+function Path.shift(s)
   -- Return the highest-level portion of a path (it's a split on `/`), along
   -- with the rest of the path string.
-  -- If your path contains traversals, you probably want to use `path.normalize`
+  -- If your path contains traversals, you probably want to use `Path.normalize`
   -- before passing to shift, since traversals will be considered parts of the
   -- path as well.
 
@@ -106,13 +114,13 @@ function path.shift(s)
   else return s:sub(1, i - 1), s:sub(j + 1) end
 end
 
-function path.parts(s)
+function Path.parts(s)
   -- Get all parts of path as list table.
   local head, rest = "", s
   local t = {}
 
   repeat
-    head, rest = path.shift(rest)
+    head, rest = Path.shift(rest)
     table.insert(t, head)
   until rest == nil
 
@@ -120,50 +128,56 @@ function path.parts(s)
 end
 
 -- Return the portion at the end of a path.
-function path.basename(path_string)
+function Path.basename(path)
   -- Get all parts of path as list table.
-  local head, rest = "", path_string
+  local head, rest = "", path
 
   repeat
-    head, rest = path.shift(rest)
+    head, rest = Path.shift(rest)
   until rest == nil
 
   -- @fixme I think the way I calculate the rest of the path may be too naive.
   -- Update: it is. It doesn't take into account cases where you don't have a
   -- basename.
-  return head, path_string:sub(0, #path_string - #head - 1)
+  return head, path:sub(0, #path - #head - 1)
 end
 
-function path.extension(path_string)
-  local dot_i = path_string:find("%.%w+$")
+function Path.extension(path)
+  local dot_i = path:find("%.%w+$")
   if not dot_i then return "" end
-  return path_string:sub(dot_i)
+  return path:sub(dot_i)
 end
 
-function path.replace_extension(path_string, new_extension)
-  return path_string:gsub("(%.%w+)$", new_extension)
+function Path.replace_extension(path, extension)
+  return path:gsub("(%.%w+)$", extension)
 end
 
-function path.has_any_extension(path_string, extensions)
+function Path.has_any_extension(path, extensions)
   for _, extension in ipairs(extensions) do
-    if path.extension(path_string) == extension then return true end
+    if Path.extension(path) == extension then return true end
   end
   return false
 end
 
 -- Remove the explicit index at the end of a url.
 -- Returns URL with any index removed.
-function path.drop_explicit_index(url_string)
-  return url_string:gsub("/index%.[^.]+$", "/")
+function Path.drop_explicit_index(path)
+  return path:gsub("/index%.[^.]+$", "/")
 end
 
 -- Given a path and a base URL, will return a pretty URL.
 -- `base_url_string` can be absolute or relative.
-function path.to_url(base_url_string, relative_path_string)
-  local normalized_path = path.normalize(relative_path_string)
-  local pretty_path = path.drop_explicit_index(normalized_path)
+function Path.to_url(path, base_url)
+  local normalized_path = Path.normalize(path)
+  local pretty_path = Path.drop_explicit_index(normalized_path)
   -- Rebase path and return.
-  return base_url_string .. "/" .. pretty_path
+  return ((base_url or "") .. "/" .. pretty_path)
 end
 
-return path
+function Path.view(path_template, context)
+  local path = Tokens.render(path_template, context)
+  -- Add index file to end of path and return.
+  return path:gsub("/$", "/index" .. context.ext)
+end
+
+return Path
