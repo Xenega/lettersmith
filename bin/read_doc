@@ -1,0 +1,8 @@
+#!/usr/local/bin/lua
+require("lualit.register")
+local Json = require("lettersmith.jsontools")
+local Doc = require("lettersmith.doc")
+local input = io.read("*a")
+local doc = Doc.parse(input)
+local json = Json.encode(doc)
+io.write(json)
